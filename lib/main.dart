@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:health_care_app/config/routes/routes_handler.dart';
-import 'package:health_care_app/config/routes/routes_name.dart';
 import 'package:health_care_app/presentation/screens/splash_screen.dart';
 
 
@@ -18,7 +17,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Health App',
       home: const SplashScreen(),
-      initialRoute: RoutesName.getStarted,
       onGenerateRoute: RoutesHandler.generateRoute,
     );
   }

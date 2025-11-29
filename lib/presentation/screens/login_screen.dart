@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:health_care_app/presentation/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,11 +17,23 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
-      print('Email: $email');
-      print('Password: $password');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successfully')),
-      );
+
+      if (email == 'sam@gmail.com' && password == '123456') {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login successfully')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+      
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid username or password')),
+        );
+      }
     }
   }
 
@@ -63,8 +76,6 @@ class _LoginPageState extends State<LoginPage> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
-                        } else if (!value.contains('@')) {
-                          return 'Enter a valid email';
                         }
                         return null;
                       },
@@ -111,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/signup');
                       },
                       child: const Text(
                         'Don\'t have an account? Sign Up',

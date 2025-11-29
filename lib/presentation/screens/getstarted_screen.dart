@@ -34,7 +34,7 @@ class GetStartedScreen extends StatelessWidget {
 
 
               Text(
-                "Halooooooooooooooooz",
+                "Welcome",
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 30,
