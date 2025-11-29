@@ -25,4 +25,5 @@ flutter:
 
   # Added assets section for images
   assets:
-    - assets/images/
+    - assets/images/history.png
+    - assets/animation/Doctor.json
