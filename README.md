@@ -28,11 +28,11 @@ git commit -m "Your descriptive commit message here"
 git push origin feature/your-feature-name
 ```
 
-### 2. Committing Changes
+### 3. Committing Changes
 
 We follow Conventional Commits. Your commit message must be clear
 
-### 3. Pull Requests (PR)
+### 4. Pull Requests (PR)
 
 When your task is done:
 
