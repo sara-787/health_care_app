@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// import 'home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:health_care_app/presentation/screens/home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -19,18 +19,33 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> signUp() async {
     if (_formKey.currentState!.validate()) {
+      String name = nameController.text.trim();
+      String nationalId = nationalIdController.text.trim();
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
 
       try {
-        final credential = await FirebaseAuth.instance
+
+        UserCredential credential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(credential.user!.uid)
+            .set({
+          'fullName': name,
+          'nationalId': nationalId,
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign up successful!')),
         );
 
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
       } on FirebaseAuthException catch (e) {
         String message = '';
         if (e.code == 'weak-password') {
@@ -38,14 +53,14 @@ class _SignUpPageState extends State<SignUpPage> {
         } else if (e.code == 'email-already-in-use') {
           message = 'The account already exists for that email.';
         } else {
-          message = 'An error occurred. Try again.';
+          message = 'An error occurred: ${e.message}';
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text('Unexpected error: $e')),
         );
       }
     }
@@ -161,10 +176,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         child: const Text(
                           'Sign Up',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
                     ),

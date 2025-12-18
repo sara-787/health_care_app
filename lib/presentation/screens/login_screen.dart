@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:health_care_app/presentation/screens/home_page.dart';
+import 'package:health_care_app/presentation/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,21 +18,15 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
-
       try {
-        final credential = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: email, password: password);
-
+        await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful!')),
         );
-
-        //
-        // Navigator.pushReplacement(
-        //   context,
-        //   // MaterialPageRoute(builder: (context) => const HomePage()),
-        // );
-
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       } on FirebaseAuthException catch (e) {
         String message = '';
         if (e.code == 'user-not-found') {
@@ -47,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text('An unexpected error: $e')),
         );
       }
     }
@@ -130,10 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         child: const Text(
                           'Login',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                          ),
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
                     ),
