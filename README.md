@@ -19,8 +19,14 @@ git checkout -b feature/your-feature-name
 ```
 
 _Branch Naming Convention:_
-
 - Features: feature/auth-login, feature/chat-ui
+### 2. Committing and Pushing Your Changes
+After completing your work on the feature branch, stage, commit, and push your changes to GitHub:
+```bash
+git add .
+git commit -m "Your descriptive commit message here"
+git push origin feature/your-feature-name
+```
 
 ### 2. Committing Changes
 
