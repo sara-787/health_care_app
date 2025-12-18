@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:health_care_app/presentation/screens/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,15 +14,42 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() {
+  Future<void> login() async {
     if (_formKey.currentState!.validate()) {
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
-      print('Email: $email');
-      print('Password: $password');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login successfully')),
-      );
+
+      try {
+        final credential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login successful!')),
+        );
+
+        //
+        // Navigator.pushReplacement(
+        //   context,
+        //   // MaterialPageRoute(builder: (context) => const HomePage()),
+        // );
+
+      } on FirebaseAuthException catch (e) {
+        String message = '';
+        if (e.code == 'user-not-found') {
+          message = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password provided.';
+        } else {
+          message = 'An error occurred. Please try again.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
@@ -111,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/signup');
                       },
                       child: const Text(
                         'Don\'t have an account? Sign Up',

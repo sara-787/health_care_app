@@ -1,5 +1,7 @@
-
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+// import 'home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -15,16 +17,37 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void signUp() {
+  Future<void> signUp() async {
     if (_formKey.currentState!.validate()) {
-      String name = nameController.text.trim();
-      String nationalId = nationalIdController.text.trim();
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign up successfully')),
-      );
+      try {
+        final credential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign up successful!')),
+        );
+
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+      } on FirebaseAuthException catch (e) {
+        String message = '';
+        if (e.code == 'weak-password') {
+          message = 'The password provided is too weak.';
+        } else if (e.code == 'email-already-in-use') {
+          message = 'The account already exists for that email.';
+        } else {
+          message = 'An error occurred. Try again.';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
     }
   }
 
