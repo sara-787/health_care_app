@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'personal_information_page.dart';
 
 class Account extends StatelessWidget {
   const Account({super.key});
+
 
   Future<Map<String, dynamic>> getUserData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -22,6 +24,7 @@ class Account extends StatelessWidget {
 
     return doc.data()!;
   }
+
 
   Future<void> updateUserData(Map<String, dynamic> newData) async {
     final user = FirebaseAuth.instance.currentUser;
@@ -47,45 +50,69 @@ class Account extends StatelessWidget {
             }
 
             if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error: ${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
+              return Center(child: Text('Error: ${snapshot.error}'));
             }
 
             final data = snapshot.data!;
-            final fullName = data['fullName'] ?? 'John Doe';
+            final currentUser = FirebaseAuth.instance.currentUser;
+
+
+            final fullName = data['fullName'] ?? data['name'] ?? 'N/A';
+            final email = currentUser?.email ?? data['email'] ?? 'N/A';
             final nationalId = data['nationalId'] ?? 'N/A';
-            final dob = data['dateOfBirth'] ?? 'N/A';
-            final gender = data['gender'] ?? 'N/A';
-            final email = FirebaseAuth.instance.currentUser!.email ?? 'No email';
-            final phone = data['phone'] ?? '01281662269';
-            final address = data['address'] ?? '123 Main Street, City, State 12345';
+
+
+            final dob = data['dateOfBirth'] ?? 'Not Set';
+            final gender = data['gender'] ?? 'Not Set';
+
+
+            final phone = data['phone'] ?? '';
+            final address = data['address'] ?? '';
+
+
+            final emName = data['emergencyName'] ?? '';
+            final emRel = data['emergencyRelationship'] ?? '';
+            final emPhone = data['emergencyPhone'] ?? '';
+
+
+            final bloodType = data['bloodType'] ?? 'Not Set';
+            final condition = data['condition'] ?? 'None';
+
+            final allergiesList = data['allergies'] as List<dynamic>?;
+            final allergiesString =
+            allergiesList != null ? allergiesList.join(', ') : 'None';
+
+
+            final personalInfo = {
+              'Full Name': fullName,
+              'National ID': nationalId,
+              'Date of Birth': dob,
+              'Gender': gender,
+              'Email': email,
+            };
 
             final contactInfo = {
               'Phone': phone,
               'Address': address,
-            }.map((key, value) => MapEntry(key, value.toString()));
-
-            final emergencyContact = {
-              'Name': data['emergencyName'] ?? 'Jane Doe',
-              'Relationship': data['emergencyRelationship'] ?? 'Spouse',
-              'Phone': data['emergencyPhone'] ?? '+1 555-123-4567',
-            }.map((key, value) => MapEntry(key, value.toString()));
+            };
 
             final medicalInfo = {
-              'Blood Type': 'O+',
-              'Allergies': 'Penicillin',
-              'Chronic Conditions': 'None',
+              'Blood Type': bloodType,
+              'Condition': condition,
+              'Allergies': allergiesString,
+            };
+
+            final emergencyInfo = {
+              'Name': emName,
+              'Relationship': emRel,
+              'Phone': emPhone,
             };
 
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile Header
+
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
                     child: Row(
@@ -123,38 +150,58 @@ class Account extends StatelessWidget {
                     ),
                   ),
 
-                  // Personal Information (Read-only)
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildProfileCard(
                       icon: Icons.person_outline,
                       title: 'Personal Information',
-                      fields: {
-                        'Full Name': fullName,
-                        'National ID': nationalId,
-                        'Date of Birth': dob,
-                        'Gender': gender,
-                        'Email': email,
+                      fields: personalInfo
+                          .map((k, v) => MapEntry(k, v.toString())),
+                      specialNotes: {
+                        'National ID': 'Cannot be changed',
                       },
-                      specialNotes: {'National ID': 'Cannot be changed'},
+                      // Optional: Link to the separate page if desired
+                      /* editAction: () {
+                         Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonalInformationPage()));
+                      }
+                      */
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Contact Information Card with Edit Icon
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildProfileCard(
-                      icon: Icons.contact_mail_outlined,
-                      title: 'Contact Information',
-                      fields: contactInfo,
+                      icon: Icons.monitor_heart_outlined,
+                      title: 'Medical Information',
+                      fields: medicalInfo
+                          .map((k, v) => MapEntry(k, v.toString())),
                       editAction: () {
                         _showEditDialog(
                           context,
-                          'Contact Information',
-                          contactInfo,
-                          (newValues) => updateUserData(newValues),
+                          'Medical Info',
+                          {
+                            'Blood Type': bloodType,
+                            'Condition': condition,
+                            'Allergies': allergiesString,
+                          },
+                              (values) {
+
+                            List<String> newAllergies = values['Allergies']!
+                                .split(',')
+                                .map((e) => e.trim())
+                                .where((e) => e.isNotEmpty)
+                                .toList();
+
+                            updateUserData({
+                              'bloodType': values['Blood Type'],
+                              'condition': values['Condition'],
+                              'allergies': newAllergies,
+                            });
+                          },
                         );
                       },
                     ),
@@ -162,34 +209,54 @@ class Account extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Medical Information Card
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildProfileCard(
-                      icon: Icons.monitor_heart_outlined,
-                      title: 'Medical Information',
-                      fields: medicalInfo,
+                      icon: Icons.contact_mail_outlined,
+                      title: 'Contact Information',
+                      fields: contactInfo
+                          .map((k, v) => MapEntry(k, v.toString())),
+                      editAction: () {
+                        _showEditDialog(
+                          context,
+                          'Contact Info',
+                          {
+                            'Phone': phone,
+                            'Address': address,
+                          },
+                              (values) => updateUserData({
+                            'phone': values['Phone'],
+                            'address': values['Address'],
+                          }),
+                        );
+                      },
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Emergency Contact Card with Edit Icon
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _buildProfileCard(
                       icon: Icons.emergency_outlined,
                       title: 'Emergency Contact',
-                      fields: emergencyContact,
+                      fields: emergencyInfo
+                          .map((k, v) => MapEntry(k, v.toString())),
                       editAction: () {
                         _showEditDialog(
                           context,
                           'Emergency Contact',
-                          emergencyContact,
-                          (newValues) => updateUserData({
-                            'emergencyName': newValues['Name'],
-                            'emergencyRelationship': newValues['Relationship'],
-                            'emergencyPhone': newValues['Phone'],
+                          {
+                            'Name': emName,
+                            'Relationship': emRel,
+                            'Phone': emPhone,
+                          },
+                              (values) => updateUserData({
+                            'emergencyName': values['Name'],
+                            'emergencyRelationship': values['Relationship'],
+                            'emergencyPhone': values['Phone'],
                           }),
                         );
                       },
@@ -198,7 +265,7 @@ class Account extends StatelessWidget {
 
                   const SizedBox(height: 32),
 
-                  // Log Out Button
+
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 20),
@@ -208,13 +275,15 @@ class Account extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           await FirebaseAuth.instance.signOut();
-                          Navigator.pushReplacementNamed(context, '/login');
+                          if (context.mounted) {
+                            Navigator.pushReplacementNamed(context, '/login');
+                          }
                         },
                         icon: const Icon(Icons.logout),
                         label: const Text('Log Out'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              const Color.fromARGB(255, 93, 106, 189),
+                          const Color.fromARGB(255, 93, 106, 189),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
@@ -230,6 +299,7 @@ class Account extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildProfileCard({
     required IconData icon,
@@ -303,7 +373,7 @@ class Account extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       note,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: const TextStyle(fontSize: 12, color: Colors.orange),
                     ),
                   ],
                 ],
@@ -314,6 +384,7 @@ class Account extends StatelessWidget {
       ),
     );
   }
+
 
   void _showEditDialog(BuildContext context, String title,
       Map<String, String> fields, Function(Map<String, String>) onSave) {
@@ -330,15 +401,15 @@ class Account extends StatelessWidget {
           child: Column(
             children: fields.keys
                 .map((key) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: TextField(
-                        controller: controllers[key],
-                        decoration: InputDecoration(
-                          labelText: key,
-                          border: const OutlineInputBorder(),
-                        ),
-                      ),
-                    ))
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: TextField(
+                controller: controllers[key],
+                decoration: InputDecoration(
+                  labelText: key,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ))
                 .toList(),
           ),
         ),
@@ -349,9 +420,9 @@ class Account extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               final newValues = controllers.map(
-                  (key, controller) => MapEntry(key, controller.text));
+                      (key, controller) => MapEntry(key, controller.text.trim()));
               await onSave(newValues);
-              Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
             child: const Text('Save'),
           )
