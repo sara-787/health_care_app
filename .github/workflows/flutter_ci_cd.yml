@@ -1,0 +1,45 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      #  Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Flutter SDK
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: stable
+
+      # Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Analyze source code
+      - name: Analyze project
+        run: flutter analyze
+
+      # Run Flutter tests
+      - name: Run tests
+        run: flutter test
+
+      # Build APK (CD step)
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # Upload APK as artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-care-app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
