@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 // Import your specific screens and models
 import 'package:health_care_app/presentation/screens/account.dart';
 import 'package:health_care_app/presentation/screens/medical_record.dart';
+import 'chat_screen.dart';
 import 'patient_model.dart';
 import 'api_service.dart';
 
@@ -43,6 +44,17 @@ class _DashboardState extends State<Dashboard> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: pages[currentPageIndex],
+      ),
+      // ADD THIS FLOATING BUTTON:
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ChatScreen()),
+          );
+        },
+        backgroundColor: const Color(0xFF2563EB),
+        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // Good for 3+ items
