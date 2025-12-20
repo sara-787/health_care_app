@@ -53,19 +53,27 @@ class PersonalInformationPage extends StatelessWidget {
           final data = snapshot.data!;
           final email = FirebaseAuth.instance.currentUser!.email ?? '';
 
+          // Fetch specific fields
+          final fullName = data['fullName'] ?? data['name'] ?? 'N/A';
+          final nationalId = data['nationalId'] ?? 'N/A';
+          final dob = data['dateOfBirth'] ?? 'Not Set';
+          final gender = data['gender'] ?? 'Not Set';
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
-                _infoCard(Icons.person, 'Full Name', data['fullName']),
+                _infoCard(Icons.person, 'Full Name', fullName),
                 const SizedBox(height: 12),
                 _infoCard(Icons.email, 'Email', email),
                 const SizedBox(height: 12),
-                _infoCard(Icons.badge, 'National ID', data['nationalId']),
+                _infoCard(Icons.badge, 'National ID', nationalId),
                 const SizedBox(height: 12),
-                _infoCard(Icons.lock, 'Password', '********'),
+                _infoCard(Icons.calendar_today, 'Date of Birth', dob),
+                const SizedBox(height: 12),
+                _infoCard(Icons.wc, 'Gender', gender),
               ],
             ),
           );
@@ -89,7 +97,6 @@ class PersonalInformationPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     title,
                     style: const TextStyle(
@@ -99,12 +106,11 @@ class PersonalInformationPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-
                   Text(
                     value,
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.black,
+                      color: Colors.black87,
                     ),
                   ),
                 ],

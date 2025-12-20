@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dashboard.dart';
 
+/// A screen that allows users to sign up for a new account.
+/// This screen collects user information and creates an account
+/// using Firebase Authentication and Firestore.
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
