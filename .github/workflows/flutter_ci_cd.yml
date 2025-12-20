@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Cache Flutter SDK for faster subsequent runs
       - name: Cache Flutter
         uses: actions/cache@v4
         with:
@@ -26,7 +24,6 @@ jobs:
           restore-keys: |
             flutter-${{ runner.os }}-stable-
 
-      # 3. Set up Flutter SDK
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -34,27 +31,21 @@ jobs:
           architecture: x64
           cache: true
 
-      # 4. Get Flutter dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # 5. Check code formatting (optional but recommended)
       - name: Check formatting
-        run: flutter format --set-exit-if-changed .
+        run: dart format --set-exit-if-changed .
 
-      # 6. Static code analysis
       - name: Analyze project
         run: flutter analyze --no-pub
 
-      # 7. Run tests (will fail if no tests found — add at least one test file!)
       - name: Run tests
         run: flutter test
 
-      # 8. Build release APK
       - name: Build release APK
         run: flutter build apk --release
 
-      # 9. Upload APK as artifact
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
