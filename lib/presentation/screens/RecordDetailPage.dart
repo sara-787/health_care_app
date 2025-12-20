@@ -63,7 +63,8 @@ class RecordDetailPage extends StatelessWidget {
               ),
               child: Text(data['type'],
                   style: TextStyle(
-                      color: Colors.grey.shade800, fontWeight: FontWeight.bold)),
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.bold)),
             ),
 
             const SizedBox(height: 24),
@@ -76,13 +77,15 @@ class RecordDetailPage extends StatelessWidget {
 
             // SPECIFIC DATA BASED ON TYPE
             if (data['type'] == 'Lab Result') ...[
-              _buildDetailRow(Icons.analytics, "Result Value", raw['value'] ?? 'N/A'),
+              _buildDetailRow(
+                  Icons.analytics, "Result Value", raw['value'] ?? 'N/A'),
               const Divider(height: 24),
               _buildDetailRow(Icons.grading, "Status", raw['status'] ?? 'N/A'),
             ] else if (data['type'] == 'Prescription') ...[
               _buildDetailRow(Icons.numbers, "Dosage", raw['dosage'] ?? 'N/A'),
               const Divider(height: 24),
-              _buildDetailRow(Icons.info_outline, "Instructions", raw['instructions'] ?? 'N/A'),
+              _buildDetailRow(Icons.info_outline, "Instructions",
+                  raw['instructions'] ?? 'N/A'),
             ],
 
             const SizedBox(height: 24),
@@ -95,7 +98,8 @@ class RecordDetailPage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               data['description'],
-              style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black87),
+              style: const TextStyle(
+                  fontSize: 16, height: 1.5, color: Colors.black87),
             ),
           ],
         ),

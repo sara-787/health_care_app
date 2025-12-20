@@ -20,7 +20,7 @@ class _AccountState extends State<Account> {
             .collection('users')
             .doc(currentUser!.uid)
             .update(newData);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile updated successfully!')),

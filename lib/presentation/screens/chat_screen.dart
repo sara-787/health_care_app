@@ -13,7 +13,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = []; // Stores {sender: "user"/"bot", text: "..."}
+  final List<Map<String, String>> _messages =
+      []; // Stores {sender: "user"/"bot", text: "..."}
   bool _isTyping = false;
 
   Future<void> _sendMessage() async {
@@ -40,12 +41,16 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       } else {
         setState(() {
-          _messages.add({"sender": "bot", "text": "Error: Server is not responding."});
+          _messages.add(
+              {"sender": "bot", "text": "Error: Server is not responding."});
         });
       }
     } catch (e) {
       setState(() {
-        _messages.add({"sender": "bot", "text": "Connection failed. Is the backend running?"});
+        _messages.add({
+          "sender": "bot",
+          "text": "Connection failed. Is the backend running?"
+        });
       });
     } finally {
       setState(() => _isTyping = false);
@@ -56,7 +61,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Medical Assistant", style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+        title: Text("Medical Assistant",
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -72,7 +78,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 final msg = _messages[index];
                 final isUser = msg['sender'] == 'user';
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     padding: const EdgeInsets.all(15),
@@ -81,11 +88,16 @@ class _ChatScreenState extends State<ChatScreen> {
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(15),
                         topRight: const Radius.circular(15),
-                        bottomLeft: isUser ? const Radius.circular(15) : Radius.zero,
-                        bottomRight: isUser ? Radius.zero : const Radius.circular(15),
+                        bottomLeft:
+                            isUser ? const Radius.circular(15) : Radius.zero,
+                        bottomRight:
+                            isUser ? Radius.zero : const Radius.circular(15),
                       ),
                       boxShadow: [
-                        if (!isUser) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)
+                        if (!isUser)
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 5)
                       ],
                     ),
                     child: Text(
@@ -104,7 +116,8 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.only(left: 20, bottom: 10),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Assistant is typing...", style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
+                child: Text("Assistant is typing...",
+                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
               ),
             ),
           Container(
@@ -124,7 +137,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       filled: true,
                       fillColor: const Color(0xFFF1F5F9),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 20),
                     ),
                   ),
                 ),

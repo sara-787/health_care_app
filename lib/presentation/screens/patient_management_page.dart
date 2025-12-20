@@ -10,7 +10,7 @@ class PatientManagementPage extends StatefulWidget {
 
 class _PatientManagementPageState extends State<PatientManagementPage> {
   final CollectionReference<Map<String, dynamic>> patientsCollection =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
 
   // ---------------- DATE UTILITIES ----------------
   String _formatDate(DateTime date) =>
@@ -36,17 +36,16 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
     final data = doc?.data();
 
     final nationalIdCtrl =
-    TextEditingController(text: data?['nationalId'] ?? '');
+        TextEditingController(text: data?['nationalId'] ?? '');
     final nameCtrl =
-    TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
+        TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
     final ageCtrl = TextEditingController(text: data?['age'] ?? '');
     final emailCtrl = TextEditingController(text: data?['email'] ?? '');
     final phoneCtrl = TextEditingController(text: data?['phone'] ?? '');
     final addressCtrl = TextEditingController(text: data?['address'] ?? '');
-    final conditionCtrl =
-    TextEditingController(text: data?['condition'] ?? '');
+    final conditionCtrl = TextEditingController(text: data?['condition'] ?? '');
     final assignedDoctorCtrl =
-    TextEditingController(text: data?['assignedDoctor'] ?? '');
+        TextEditingController(text: data?['assignedDoctor'] ?? '');
     final dobCtrl = TextEditingController(text: data?['dateOfBirth'] ?? '');
     final allergiesCtrl = TextEditingController(
         text: data?['allergies'] != null
@@ -87,7 +86,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   decoration: const InputDecoration(labelText: 'National ID'),
                   keyboardType: TextInputType.number,
                   validator: (v) =>
-                  v != null && v.length != 14 ? '14 digits required' : null,
+                      v != null && v.length != 14 ? '14 digits required' : null,
                   onChanged: (_) => fetchEmail(), // Added automatic email fetch
                 ),
                 TextFormField(
@@ -135,7 +134,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 TextFormField(
                     controller: assignedDoctorCtrl,
                     decoration:
-                    const InputDecoration(labelText: 'Assigned Doctor')),
+                        const InputDecoration(labelText: 'Assigned Doctor')),
                 TextFormField(
                     controller: allergiesCtrl,
                     decoration: const InputDecoration(
@@ -169,8 +168,9 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   'email': emailCtrl.text,
                   'phone': phoneCtrl.text,
                   'address': addressCtrl.text,
-                  'condition':
-                  conditionCtrl.text.isNotEmpty ? conditionCtrl.text : 'None',
+                  'condition': conditionCtrl.text.isNotEmpty
+                      ? conditionCtrl.text
+                      : 'None',
                   'status': data?['status'] ?? 'Stable',
                   'statusColor': data?['statusColor'] ?? Colors.green.value,
                   'assignedDoctor': assignedDoctorCtrl.text.isNotEmpty
@@ -208,12 +208,18 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
     final formKey = GlobalKey<FormState>();
     final patientData = Map<String, dynamic>.from(patientDoc.data()!);
 
-    final field1Ctrl =
-    TextEditingController(text: item != null ? (type == 'Lab' ? item['test'] : item['medication']) : '');
-    final field2Ctrl =
-    TextEditingController(text: item != null ? (type == 'Lab' ? item['value'] : item['dosage']) : '');
-    final field3Ctrl =
-    TextEditingController(text: item != null ? (type == 'Lab' ? item['status'] : item['instructions']) : '');
+    final field1Ctrl = TextEditingController(
+        text: item != null
+            ? (type == 'Lab' ? item['test'] : item['medication'])
+            : '');
+    final field2Ctrl = TextEditingController(
+        text: item != null
+            ? (type == 'Lab' ? item['value'] : item['dosage'])
+            : '');
+    final field3Ctrl = TextEditingController(
+        text: item != null
+            ? (type == 'Lab' ? item['status'] : item['instructions'])
+            : '');
     final dateCtrl = TextEditingController(text: item?['date'] ?? _today);
 
     showDialog(
@@ -227,17 +233,20 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
             children: [
               TextFormField(
                 controller: field1Ctrl,
-                decoration: InputDecoration(labelText: type == 'Lab' ? 'Test Name' : 'Medication'),
+                decoration: InputDecoration(
+                    labelText: type == 'Lab' ? 'Test Name' : 'Medication'),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: field2Ctrl,
-                decoration: InputDecoration(labelText: type == 'Lab' ? 'Value' : 'Dosage'),
+                decoration: InputDecoration(
+                    labelText: type == 'Lab' ? 'Value' : 'Dosage'),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
                 controller: field3Ctrl,
-                decoration: InputDecoration(labelText: type == 'Lab' ? 'Status' : 'Instructions'),
+                decoration: InputDecoration(
+                    labelText: type == 'Lab' ? 'Status' : 'Instructions'),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
               ),
               TextFormField(
@@ -255,17 +264,20 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
-                List<dynamic> listKey =
-                type == 'Lab' ? patientData['labResults'] ?? [] : patientData['prescriptions'] ?? [];
+                List<dynamic> listKey = type == 'Lab'
+                    ? patientData['labResults'] ?? []
+                    : patientData['prescriptions'] ?? [];
 
                 Map<String, dynamic> newItem;
                 if (type == 'Lab') {
                   int color = Colors.green.value;
-                  if (field3Ctrl.text.toLowerCase().contains('high')) color = Colors.orange.value;
+                  if (field3Ctrl.text.toLowerCase().contains('high'))
+                    color = Colors.orange.value;
                   newItem = {
                     'test': field1Ctrl.text,
                     'value': field2Ctrl.text,
@@ -305,9 +317,12 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
   // ---------------- PATIENT DETAILS VIEW ----------------
   void _openPatientDetails(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
-    final rawLabs = data['labResults'] != null ? data['labResults'] as List : [];
-    final displayLabs = rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
-    final rawRx = data['prescriptions'] != null ? data['prescriptions'] as List : [];
+    final rawLabs =
+        data['labResults'] != null ? data['labResults'] as List : [];
+    final displayLabs =
+        rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
+    final rawRx =
+        data['prescriptions'] != null ? data['prescriptions'] as List : [];
     final displayRx = rawRx.map((e) => Map<String, dynamic>.from(e)).toList();
 
     Navigator.push(
@@ -325,18 +340,26 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      const CircleAvatar(radius: 30, child: Icon(Icons.person, size: 30)),
+                      const CircleAvatar(
+                          radius: 30, child: Icon(Icons.person, size: 30)),
                       const SizedBox(height: 10),
                       Text(data['fullName'] ?? data['name'] ?? '',
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                      Text('${data['age']} yrs • ${data['gender']} • ${data['condition']}'),
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text(
+                          '${data['age']} yrs • ${data['gender']} • ${data['condition']}'),
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: Color(data['statusColor'] ?? Colors.green.value), borderRadius: BorderRadius.circular(20)),
+                            color: Color(
+                                data['statusColor'] ?? Colors.green.value),
+                            borderRadius: BorderRadius.circular(20)),
                         child: Text(data['status'] ?? 'Stable',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
                       )
                     ],
                   ),
@@ -346,13 +369,23 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               const SizedBox(height: 20),
 
               // Contact Info
-              const Text("Contact Info", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text("Contact Info",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Card(
                 child: Column(
                   children: [
-                    ListTile(leading: const Icon(Icons.email), title: const Text("Email"), subtitle: Text(data['email'] ?? '')),
-                    ListTile(leading: const Icon(Icons.phone), title: const Text("Phone"), subtitle: Text(data['phone'] ?? '')),
-                    ListTile(leading: const Icon(Icons.location_on), title: const Text("Address"), subtitle: Text(data['address'] ?? '')),
+                    ListTile(
+                        leading: const Icon(Icons.email),
+                        title: const Text("Email"),
+                        subtitle: Text(data['email'] ?? '')),
+                    ListTile(
+                        leading: const Icon(Icons.phone),
+                        title: const Text("Phone"),
+                        subtitle: Text(data['phone'] ?? '')),
+                    ListTile(
+                        leading: const Icon(Icons.location_on),
+                        title: const Text("Address"),
+                        subtitle: Text(data['address'] ?? '')),
                   ],
                 ),
               ),
@@ -360,13 +393,19 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               const SizedBox(height: 20),
 
               // Allergies
-              const Text("Allergies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text("Allergies",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Wrap(
                     spacing: 8,
-                    children: (data['allergies'] as List?)?.map<Widget>((a) => Chip(label: Text(a), backgroundColor: Colors.red.shade50))?.toList() ?? [],
+                    children: (data['allergies'] as List?)
+                            ?.map<Widget>((a) => Chip(
+                                label: Text(a),
+                                backgroundColor: Colors.red.shade50))
+                            ?.toList() ??
+                        [],
                   ),
                 ),
               ),
@@ -377,27 +416,40 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Lab Results", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Lab Results",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
-                    onPressed: () => _showItemForm(type: 'Lab', patientDoc: doc),
+                    onPressed: () =>
+                        _showItemForm(type: 'Lab', patientDoc: doc),
                   )
                 ],
               ),
-              if (displayLabs.isEmpty) const Text("No records found", style: TextStyle(color: Colors.grey)),
+              if (displayLabs.isEmpty)
+                const Text("No records found",
+                    style: TextStyle(color: Colors.grey)),
               ...displayLabs.asMap().entries.map((entry) {
                 return Card(
                   child: ListTile(
                     leading: const Icon(Icons.science, color: Colors.orange),
                     title: Text(entry.value['test']),
-                    subtitle: Text("${entry.value['status']} • ${entry.value['date']}"),
+                    subtitle: Text(
+                        "${entry.value['status']} • ${entry.value['date']}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(entry.value['value'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(entry.value['value'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-                          onPressed: () => _showItemForm(type: 'Lab', patientDoc: doc, item: entry.value, index: entry.key),
+                          icon: const Icon(Icons.edit,
+                              size: 20, color: Colors.grey),
+                          onPressed: () => _showItemForm(
+                              type: 'Lab',
+                              patientDoc: doc,
+                              item: entry.value,
+                              index: entry.key),
                         )
                       ],
                     ),
@@ -411,28 +463,40 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Prescriptions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text("Prescriptions",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () => _showItemForm(type: 'Rx', patientDoc: doc),
                   )
                 ],
               ),
-              if (displayRx.isEmpty) const Text("No records found", style: TextStyle(color: Colors.grey)),
+              if (displayRx.isEmpty)
+                const Text("No records found",
+                    style: TextStyle(color: Colors.grey)),
               ...displayRx.asMap().entries.map((entry) {
                 return Card(
                   child: ListTile(
                     leading: const Icon(Icons.medication, color: Colors.blue),
                     title: Text(entry.value['medication']),
-                    subtitle: Text("${entry.value['instructions']}\n${entry.value['date']}"),
+                    subtitle: Text(
+                        "${entry.value['instructions']}\n${entry.value['date']}"),
                     isThreeLine: true,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(entry.value['dosage'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(entry.value['dosage'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-                          onPressed: () => _showItemForm(type: 'Rx', patientDoc: doc, item: entry.value, index: entry.key),
+                          icon: const Icon(Icons.edit,
+                              size: 20, color: Colors.grey),
+                          onPressed: () => _showItemForm(
+                              type: 'Rx',
+                              patientDoc: doc,
+                              item: entry.value,
+                              index: entry.key),
                         )
                       ],
                     ),
@@ -451,9 +515,12 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: Text('Delete ${doc.data()?['fullName'] ?? doc.data()?['name'] ?? ''}?'),
+        content: Text(
+            'Delete ${doc.data()?['fullName'] ?? doc.data()?['name'] ?? ''}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               await patientsCollection.doc(doc.id).delete();
@@ -484,11 +551,13 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Patient Records',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                   ElevatedButton.icon(
                     onPressed: () => _showPatientForm(),
                     icon: const Icon(Icons.add, size: 20),
-                    label: const Text('Add Patient', style: TextStyle(fontWeight: FontWeight.w600)),
+                    label: const Text('Add Patient',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -497,7 +566,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: patientsCollection.snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                    if (!snapshot.hasData)
+                      return const Center(child: CircularProgressIndicator());
                     final patients = snapshot.data!.docs;
 
                     return SingleChildScrollView(
@@ -516,26 +586,33 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                           return DataRow(
                             cells: [
                               DataCell(Text(data['nationalId'] ?? '')),
-                              DataCell(Text(data['fullName'] ?? data['name'] ?? '')),
+                              DataCell(
+                                  Text(data['fullName'] ?? data['name'] ?? '')),
                               DataCell(Text(data['gender'] ?? '')),
                               DataCell(Text(data['dateOfBirth'] ?? '')),
-                              DataCell(SelectableText(data['email'] ?? '', style: const TextStyle(color: Colors.blue))),
+                              DataCell(SelectableText(data['email'] ?? '',
+                                  style: const TextStyle(color: Colors.blue))),
                               DataCell(Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.visibility, color: Colors.blue),
+                                    icon: const Icon(Icons.visibility,
+                                        color: Colors.blue),
                                     tooltip: 'View',
-                                    onPressed: () => _openPatientDetails(patientDoc),
+                                    onPressed: () =>
+                                        _openPatientDetails(patientDoc),
                                     splashRadius: 22,
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.orange),
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.orange),
                                     tooltip: 'Edit',
-                                    onPressed: () => _showPatientForm(doc: patientDoc),
+                                    onPressed: () =>
+                                        _showPatientForm(doc: patientDoc),
                                     splashRadius: 22,
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.redAccent),
                                     tooltip: 'Delete',
                                     onPressed: () => _deletePatient(patientDoc),
                                     splashRadius: 22,

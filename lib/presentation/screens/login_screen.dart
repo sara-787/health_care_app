@@ -22,18 +22,16 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-
       UserCredential credential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
       String uid = credential.user!.uid;
 
-
       DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
@@ -44,20 +42,17 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(content: Text('Login successful!')),
       );
 
-
       if (emailController.text.trim() == 'sam@gmail.com') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const PatientManagementPage()),
         );
       } else {
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const Dashboard()),
         );
       }
-
     } on FirebaseAuthException catch (e) {
       String message = '';
       if (e.code == 'user-not-found') {

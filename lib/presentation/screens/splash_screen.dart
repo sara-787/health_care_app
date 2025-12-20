@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'getstarted_screen.dart';
 
-
-
 //
 // class SplashScreen extends StatelessWidget {
 //   const SplashScreen({super.key});
@@ -61,7 +59,7 @@ class SplashScreen extends StatelessWidget {
         duration: 1800,
         splashIconSize: 600,
         backgroundColor: Colors.white,
-
-        splash: Center(child: Lottie.asset('assets/animation/Doctor.json')), nextScreen: GetStartedScreen());
+        splash: Center(child: Lottie.asset('assets/animation/Doctor.json')),
+        nextScreen: GetStartedScreen());
   }
 }

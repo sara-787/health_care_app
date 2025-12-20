@@ -31,8 +31,8 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     pages = [
       const DashboardContent(), // <--- The rich UI from your second file
-      const MedicalRecord(),    // Your existing screen
-      const Account(),          // Your existing screen
+      const MedicalRecord(), // Your existing screen
+      const Account(), // Your existing screen
     ];
   }
 
@@ -129,7 +129,8 @@ class _DashboardContentState extends State<DashboardContent> {
           if (patient != null) {
             _patient = patient;
             // Add point to chart
-            _hrHistory.add(FlSpot(_timeCounter++, patient.heartRate.toDouble()));
+            _hrHistory
+                .add(FlSpot(_timeCounter++, patient.heartRate.toDouble()));
             // Keep only last 20 points for a moving window
             if (_hrHistory.length > 20) _hrHistory.removeAt(0);
           }
@@ -163,7 +164,8 @@ class _DashboardContentState extends State<DashboardContent> {
             const SizedBox(height: 16),
             Text(
               "Could not load data",
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+              style:
+                  GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -227,8 +229,14 @@ class _DashboardContentState extends State<DashboardContent> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isCritical
-              ? [const Color(0xFFEF4444), const Color(0xFFB91C1C)] // Red if critical
-              : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)], // Blue normally
+              ? [
+                  const Color(0xFFEF4444),
+                  const Color(0xFFB91C1C)
+                ] // Red if critical
+              : [
+                  const Color(0xFF2563EB),
+                  const Color(0xFF1D4ED8)
+                ], // Blue normally
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -256,14 +264,16 @@ class _DashboardContentState extends State<DashboardContent> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   _patient?.status ?? 'Unknown',
-                  style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(width: 10),
@@ -370,7 +380,8 @@ class _DashboardContentState extends State<DashboardContent> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(title, style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
+          Text(title,
+              style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -416,7 +427,9 @@ class _DashboardContentState extends State<DashboardContent> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
+        ],
       ),
       child: Row(
         children: [
@@ -427,8 +440,10 @@ class _DashboardContentState extends State<DashboardContent> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Dr. Sarah Johnson", style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-              Text("Cardiologist", style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
+              Text("Dr. Sarah Johnson",
+                  style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+              Text("Cardiologist",
+                  style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
             ],
           ),
           const Spacer(),
@@ -438,7 +453,9 @@ class _DashboardContentState extends State<DashboardContent> {
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Text("10:00 AM", style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+            child: Text("10:00 AM",
+                style: GoogleFonts.inter(
+                    fontSize: 12, fontWeight: FontWeight.w600)),
           )
         ],
       ),

@@ -53,7 +53,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
   // ---------------------------------------------------------------------------
 
   void _shareRecord(Map<String, dynamic> record) {
-    String content = 'Medical Record: ${record['title']}\nDate: ${record['date']}';
+    String content =
+        'Medical Record: ${record['title']}\nDate: ${record['date']}';
     if (record['url'] != null && record['url'].isNotEmpty) {
       content += '\nDownload: ${record['url']}';
     } else {
@@ -62,11 +63,13 @@ class _MedicalRecordState extends State<MedicalRecord> {
     Share.share(content);
   }
 
-  Future<void> _downloadRecord(BuildContext context, Map<String, dynamic> record) async {
+  Future<void> _downloadRecord(
+      BuildContext context, Map<String, dynamic> record) async {
     // Check if there is a URL (Lab results stored as text won't have a URL)
     if (record['url'] == null || record['url'].isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This record is text-only (No PDF attached).')),
+        const SnackBar(
+            content: Text('This record is text-only (No PDF attached).')),
       );
       return;
     }
@@ -77,7 +80,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
       );
 
       final dir = await getApplicationDocumentsDirectory();
-      final fileName = "${record['title'].toString().replaceAll(RegExp(r'[^\w\s]+'), '')}.pdf";
+      final fileName =
+          "${record['title'].toString().replaceAll(RegExp(r'[^\w\s]+'), '')}.pdf";
       final savePath = '${dir.path}/$fileName';
 
       await Dio().download(record['url'], savePath);
@@ -94,7 +98,9 @@ class _MedicalRecordState extends State<MedicalRecord> {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download Failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Download Failed: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -105,7 +111,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("Please login to view records")));
+      return const Scaffold(
+          body: Center(child: Text("Please login to view records")));
     }
 
     return Scaffold(
@@ -121,7 +128,9 @@ class _MedicalRecordState extends State<MedicalRecord> {
             const Text(
               'Medical Records',
               style: TextStyle(
-                  fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
             ),
             const SizedBox(height: 8),
             Text(
@@ -160,19 +169,25 @@ class _MedicalRecordState extends State<MedicalRecord> {
             Expanded(
               child: StreamBuilder<DocumentSnapshot>(
                 // Fetching the specific user document based on Auth UID
-                stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(user.uid)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
                   if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const Center(child: Text('No patient record found.'));
+                    return const Center(
+                        child: Text('No patient record found.'));
                   }
 
                   // 1. Get raw data
-                  final userData = snapshot.data!.data() as Map<String, dynamic>;
-                  final String assignedDoctor = userData['assignedDoctor'] ?? 'General Doctor';
+                  final userData =
+                      snapshot.data!.data() as Map<String, dynamic>;
+                  final String assignedDoctor =
+                      userData['assignedDoctor'] ?? 'General Doctor';
 
                   List<Map<String, dynamic>> allItems = [];
 
@@ -182,10 +197,12 @@ class _MedicalRecordState extends State<MedicalRecord> {
                       allItems.add({
                         'title': item['test'] ?? 'Unknown Test',
                         'type': 'Lab Result',
-                        'description': 'Value: ${item['value']} | Status: ${item['status']}',
+                        'description':
+                            'Value: ${item['value']} | Status: ${item['status']}',
                         'date': item['date'] ?? 'No Date',
                         'doctor': assignedDoctor,
-                        'url': '', // Assuming no file URL in current structure, add if exists
+                        'url':
+                            '', // Assuming no file URL in current structure, add if exists
                         'raw': item, // Keep raw data for details page
                       });
                     }
@@ -197,7 +214,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                       allItems.add({
                         'title': item['medication'] ?? 'Unknown Med',
                         'type': 'Prescription',
-                        'description': 'Dosage: ${item['dosage']} | ${item['instructions']}',
+                        'description':
+                            'Dosage: ${item['dosage']} | ${item['instructions']}',
                         'date': item['date'] ?? 'No Date',
                         'doctor': assignedDoctor,
                         'url': '',
@@ -209,7 +227,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                   // 4. Filter Logic
                   final filteredRecords = allItems.where((item) {
                     final title = item['title'].toString().toLowerCase();
-                    return _searchKeyword.isEmpty || title.contains(_searchKeyword);
+                    return _searchKeyword.isEmpty ||
+                        title.contains(_searchKeyword);
                   }).toList();
 
                   if (filteredRecords.isEmpty) {
@@ -246,7 +265,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                       child: Text(
                                         record['type'],
                                         style: TextStyle(
-                                          color: getTagTextColor(record['type']),
+                                          color:
+                                              getTagTextColor(record['type']),
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
@@ -283,7 +303,7 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                             Text(record['date'],
                                                 style: TextStyle(
                                                     color:
-                                                    Colors.grey.shade600)),
+                                                        Colors.grey.shade600)),
                                           ],
                                         ),
                                         Row(
@@ -296,7 +316,7 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                             Text(record['doctor'],
                                                 style: TextStyle(
                                                     color:
-                                                    Colors.grey.shade600)),
+                                                        Colors.grey.shade600)),
                                           ],
                                         ),
                                       ],
@@ -317,15 +337,14 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      backgroundColor:
+                                          Theme.of(context).colorScheme.primary,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 20, vertical: 12),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
-                                          BorderRadius.circular(12)),
+                                              BorderRadius.circular(12)),
                                     ),
                                     child: const Text('View'),
                                   ),

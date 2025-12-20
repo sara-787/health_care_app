@@ -9,7 +9,8 @@ class FirebaseRecordsPage extends StatelessWidget {
   const FirebaseRecordsPage({super.key});
 
   // Function to handle File Download
-  Future<void> downloadFile(BuildContext context, String url, String fileName) async {
+  Future<void> downloadFile(
+      BuildContext context, String url, String fileName) async {
     try {
       // 1. Check Permission (Android 10+ doesn't need external storage perm mostly, but good practice)
       // For simplicity in this example, we save to the App Documents directory
@@ -43,7 +44,9 @@ class FirebaseRecordsPage extends StatelessWidget {
       appBar: AppBar(title: const Text("Cloud Records")),
       body: StreamBuilder<QuerySnapshot>(
         // Fetching from Firebase collection 'medical_records'
-        stream: FirebaseFirestore.instance.collection('medical_records').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('medical_records')
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -75,7 +78,8 @@ class FirebaseRecordsPage extends StatelessWidget {
                       downloadFile(context, url, '$title.pdf');
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No file URL found for this record')),
+                        const SnackBar(
+                            content: Text('No file URL found for this record')),
                       );
                     }
                   },

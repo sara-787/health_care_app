@@ -50,7 +50,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                   child: Text(
                     "Sign Up",
-                    style: GoogleFonts.poppins(fontSize: 18, color: Colors.white),
+                    style:
+                        GoogleFonts.poppins(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
@@ -70,7 +71,8 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                   child: Text(
                     "Login",
-                    style: GoogleFonts.poppins(fontSize: 18, color: buttonColor),
+                    style:
+                        GoogleFonts.poppins(fontSize: 18, color: buttonColor),
                   ),
                 ),
               ),
