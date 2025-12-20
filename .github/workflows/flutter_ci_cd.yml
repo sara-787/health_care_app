@@ -2,46 +2,62 @@ name: Flutter CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-#      # 2. Setup Flutter SDK
-#      - name: Setup Flutter
-#        uses: subosito/flutter-action@v2.2.0
-#        with:
-#          flutter-version: "3.13.0"
-#          channel: stable
-#          arch: x64
-#
-#      # 3. Install dependencies
-#      - name: Install dependencies
-#        run: flutter pub get
-#
-#      # 4. Analyze source code
-#      - name: Analyze project
-#        run: flutter analyze
+      # 2. Cache Flutter SDK for faster subsequent runs
+      - name: Cache Flutter
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.tool_cache }}/flutter
+            ~/.pub-cache
+          key: flutter-${{ runner.os }}-stable-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            flutter-${{ runner.os }}-stable-
 
-      # 5. Run Flutter tests
+      # 3. Set up Flutter SDK
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          architecture: x64
+          cache: true
+
+      # 4. Get Flutter dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. Check code formatting (optional but recommended)
+      - name: Check formatting
+        run: flutter format --set-exit-if-changed .
+
+      # 6. Static code analysis
+      - name: Analyze project
+        run: flutter analyze --no-pub
+
+      # 7. Run tests (will fail if no tests found — add at least one test file!)
       - name: Run tests
         run: flutter test
 
-      # 6. Build release APK (CD step)
+      # 8. Build release APK
       - name: Build release APK
         run: flutter build apk --release
 
-      # 7. Upload APK as artifact
-      - name: Upload APK
+      # 9. Upload APK as artifact
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: health-care-app-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
