@@ -17,11 +17,9 @@ jobs:
 
       # 2. Setup Flutter SDK
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2.2.0
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.35.3
-          channel: stable
-          arch: x64
+          flutter-version: "3.13.0"
 
       # 3. Install dependencies
       - name: Install dependencies
