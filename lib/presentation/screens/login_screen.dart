@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       UserCredential credential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
       String uid = credential.user!.uid;
 
       DocumentSnapshot userDoc =
-      await FirebaseFirestore.instance.collection('users').doc(uid).get();
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;

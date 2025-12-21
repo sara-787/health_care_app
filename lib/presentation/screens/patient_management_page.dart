@@ -10,7 +10,7 @@ class PatientManagementPage extends StatefulWidget {
 
 class _PatientManagementPageState extends State<PatientManagementPage> {
   final CollectionReference<Map<String, dynamic>> patientsCollection =
-  FirebaseFirestore.instance.collection('users');
+      FirebaseFirestore.instance.collection('users');
 
   // ---------------- DATE UTILITIES ----------------
   String _formatDate(DateTime date) =>
@@ -36,16 +36,16 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
     final data = doc?.data();
 
     final nationalIdCtrl =
-    TextEditingController(text: data?['nationalId'] ?? '');
+        TextEditingController(text: data?['nationalId'] ?? '');
     final nameCtrl =
-    TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
+        TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
     final ageCtrl = TextEditingController(text: data?['age'] ?? '');
     final emailCtrl = TextEditingController(text: data?['email'] ?? '');
     final phoneCtrl = TextEditingController(text: data?['phone'] ?? '');
     final addressCtrl = TextEditingController(text: data?['address'] ?? '');
     final conditionCtrl = TextEditingController(text: data?['condition'] ?? '');
     final assignedDoctorCtrl =
-    TextEditingController(text: data?['assignedDoctor'] ?? '');
+        TextEditingController(text: data?['assignedDoctor'] ?? '');
     final dobCtrl = TextEditingController(text: data?['dateOfBirth'] ?? '');
     final allergiesCtrl = TextEditingController(
         text: data?['allergies'] != null
@@ -72,7 +72,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      // FIXED: Renamed 'context' to '_' to avoid shadowing the parent context
+      builder: (_) => AlertDialog(
         title: Text(isEdit ? 'Edit Patient' : 'Add New Patient'),
         content: SizedBox(
           width: double.maxFinite,
@@ -86,7 +87,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   decoration: const InputDecoration(labelText: 'National ID'),
                   keyboardType: TextInputType.number,
                   validator: (v) =>
-                  v != null && v.length != 14 ? '14 digits required' : null,
+                      v != null && v.length != 14 ? '14 digits required' : null,
                   onChanged: (_) => fetchEmail(),
                 ),
                 TextFormField(
@@ -94,7 +95,6 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   decoration: const InputDecoration(labelText: 'Full Name'),
                   validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                 ),
-                // FIXED: Replaced 'value' with 'initialValue'
                 DropdownButtonFormField<String>(
                   initialValue: gender,
                   items: ['Male', 'Female']
@@ -135,7 +135,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 TextFormField(
                     controller: assignedDoctorCtrl,
                     decoration:
-                    const InputDecoration(labelText: 'Assigned Doctor')),
+                        const InputDecoration(labelText: 'Assigned Doctor')),
                 TextFormField(
                     controller: allergiesCtrl,
                     decoration: const InputDecoration(
@@ -174,7 +174,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       : 'None',
                   'status': data?['status'] ?? 'Stable',
                   'statusColor':
-                  data?['statusColor'] ?? Colors.green.toARGB32(),
+                      data?['statusColor'] ?? Colors.green.toARGB32(),
                   'assignedDoctor': assignedDoctorCtrl.text.isNotEmpty
                       ? assignedDoctorCtrl.text
                       : 'Not Assigned',
@@ -190,8 +190,10 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   await patientsCollection.add(patientData);
                 }
 
-                if (!context.mounted) return;
-                Navigator.pop(context);
+                // FIXED: Use !mounted checks the State
+                if (!mounted) return;
+                // FIXED: Use Navigator.of(context) using the State's context
+                Navigator.of(context).pop();
               }
             },
             child: const Text('Save'),
@@ -227,7 +229,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      // FIXED: Renamed 'ctx' to '_'
+      builder: (_) => AlertDialog(
         title: Text(item == null ? 'Add $type' : 'Edit $type'),
         content: Form(
           key: formKey,
@@ -258,7 +261,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   labelText: 'Date',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.calendar_today),
-                    onPressed: () => _pickDate(ctx, dateCtrl),
+                    onPressed: () => _pickDate(context, dateCtrl),
                   ),
                 ),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
@@ -268,7 +271,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
@@ -308,8 +312,9 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   type == 'Lab' ? 'labResults' : 'prescriptions': listKey,
                 });
 
-                if (!context.mounted) return;
-                Navigator.pop(ctx);
+                if (!mounted) return;
+                // FIXED: Use Navigator.of(context) using the State's context
+                Navigator.of(context).pop();
               }
             },
             child: const Text('Save'),
@@ -323,11 +328,11 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
   void _openPatientDetails(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     final rawLabs =
-    data['labResults'] != null ? data['labResults'] as List : [];
+        data['labResults'] != null ? data['labResults'] as List : [];
     final displayLabs =
-    rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
+        rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
     final rawRx =
-    data['prescriptions'] != null ? data['prescriptions'] as List : [];
+        data['prescriptions'] != null ? data['prescriptions'] as List : [];
     final displayRx = rawRx.map((e) => Map<String, dynamic>.from(e)).toList();
 
     Navigator.push(
@@ -357,8 +362,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: Color(data['statusColor'] ??
-                                Colors.green.toARGB32()),
+                            color: Color(
+                                data['statusColor'] ?? Colors.green.toARGB32()),
                             borderRadius: BorderRadius.circular(20)),
                         child: Text(data['status'] ?? 'Stable',
                             style: const TextStyle(
@@ -369,7 +374,6 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
               const Text("Contact Info",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -392,7 +396,6 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
               const Text("Allergies",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Card(
@@ -401,10 +404,10 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   child: Wrap(
                     spacing: 8,
                     children: (data['allergies'] as List?)
-                        ?.map<Widget>((a) => Chip(
-                        label: Text(a.toString()),
-                        backgroundColor: Colors.red.shade50))
-                        .toList() ??
+                            ?.map<Widget>((a) => Chip(
+                                label: Text(a.toString()),
+                                backgroundColor: Colors.red.shade50))
+                            .toList() ??
                         [],
                   ),
                 ),
@@ -415,7 +418,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 children: [
                   const Text("Lab Results",
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () =>
@@ -438,7 +441,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       children: [
                         Text(entry.value['value'],
                             style:
-                            const TextStyle(fontWeight: FontWeight.bold)),
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
                           icon: const Icon(Icons.edit,
                               size: 20, color: Colors.grey),
@@ -453,14 +456,13 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   ),
                 );
               }),
-
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Prescriptions",
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () => _showItemForm(type: 'Rx', patientDoc: doc),
@@ -483,7 +485,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       children: [
                         Text(entry.value['dosage'],
                             style:
-                            const TextStyle(fontWeight: FontWeight.bold)),
+                                const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
                           icon: const Icon(Icons.edit,
                               size: 20, color: Colors.grey),
@@ -520,7 +522,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
             onPressed: () async {
               await patientsCollection.doc(doc.id).delete();
               if (!mounted) return;
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -548,7 +550,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 children: [
                   const Text('Patient Records',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                   ElevatedButton.icon(
                     onPressed: () => _showPatientForm(),
                     icon: const Icon(Icons.add, size: 20),

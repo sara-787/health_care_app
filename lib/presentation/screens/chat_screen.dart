@@ -46,9 +46,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   alignment: Alignment.centerRight,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1), // Fixed deprecated withOpacity
+                      color: Colors.blue.withValues(
+                          alpha: 0.1), // Fixed deprecated withOpacity
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -71,7 +73,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: const InputDecoration(
                       hintText: "Type a message...",
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),

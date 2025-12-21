@@ -57,9 +57,9 @@ class _DownloadMedicalRecordState extends State<DownloadMedicalRecord> {
               onPressed: _isDownloading
                   ? null
                   : () => _downloadFile(
-                "https://example.com/sample-report.pdf",
-                "medical_report.pdf",
-              ),
+                        "https://example.com/sample-report.pdf",
+                        "medical_report.pdf",
+                      ),
               child: const Text("Download Sample Report"),
             ),
             const SizedBox(height: 20),

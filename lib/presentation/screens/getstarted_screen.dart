@@ -18,7 +18,6 @@ class GetStartedScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 40),
-
               Expanded(
                 child: Center(
                   child: Image.asset(
@@ -28,9 +27,7 @@ class GetStartedScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Text(
                 "Welcome",
                 textAlign: TextAlign.center,
@@ -40,9 +37,7 @@ class GetStartedScreen extends StatelessWidget {
                   color: primaryBlue,
                 ),
               ),
-
               const SizedBox(height: 10),
-
               Text(
                 "View complete medical histories and track wellness — all in one place.",
                 textAlign: TextAlign.center,
@@ -51,9 +46,7 @@ class GetStartedScreen extends StatelessWidget {
                   color: Colors.black54,
                 ),
               ),
-
               const SizedBox(height: 50),
-
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -77,7 +70,6 @@ class GetStartedScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 25),
             ],
           ),
