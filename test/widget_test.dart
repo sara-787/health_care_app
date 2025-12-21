@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:health_care_app/presentation/screens/getstarted_screen.dart';
 import 'package:health_care_app/presentation/screens/login_screen.dart';
-import 'package:health_care_app/presentation/screens/patient_management_page.dart';
 import 'package:health_care_app/presentation/screens/record_detail_page.dart%20.dart';
 import 'package:health_care_app/presentation/screens/signup_screen.dart';
 
