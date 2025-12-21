@@ -10,7 +10,7 @@ class PatientManagementPage extends StatefulWidget {
 
 class _PatientManagementPageState extends State<PatientManagementPage> {
   final CollectionReference<Map<String, dynamic>> patientsCollection =
-      FirebaseFirestore.instance.collection('users');
+  FirebaseFirestore.instance.collection('users');
 
   // ---------------- DATE UTILITIES ----------------
   String _formatDate(DateTime date) =>
@@ -36,16 +36,16 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
     final data = doc?.data();
 
     final nationalIdCtrl =
-        TextEditingController(text: data?['nationalId'] ?? '');
+    TextEditingController(text: data?['nationalId'] ?? '');
     final nameCtrl =
-        TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
+    TextEditingController(text: data?['fullName'] ?? data?['name'] ?? '');
     final ageCtrl = TextEditingController(text: data?['age'] ?? '');
     final emailCtrl = TextEditingController(text: data?['email'] ?? '');
     final phoneCtrl = TextEditingController(text: data?['phone'] ?? '');
     final addressCtrl = TextEditingController(text: data?['address'] ?? '');
     final conditionCtrl = TextEditingController(text: data?['condition'] ?? '');
     final assignedDoctorCtrl =
-        TextEditingController(text: data?['assignedDoctor'] ?? '');
+    TextEditingController(text: data?['assignedDoctor'] ?? '');
     final dobCtrl = TextEditingController(text: data?['dateOfBirth'] ?? '');
     final allergiesCtrl = TextEditingController(
         text: data?['allergies'] != null
@@ -86,16 +86,17 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   decoration: const InputDecoration(labelText: 'National ID'),
                   keyboardType: TextInputType.number,
                   validator: (v) =>
-                      v != null && v.length != 14 ? '14 digits required' : null,
-                  onChanged: (_) => fetchEmail(), // Added automatic email fetch
+                  v != null && v.length != 14 ? '14 digits required' : null,
+                  onChanged: (_) => fetchEmail(),
                 ),
                 TextFormField(
                   controller: nameCtrl,
                   decoration: const InputDecoration(labelText: 'Full Name'),
                   validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                 ),
+                // FIXED: Replaced 'value' with 'initialValue'
                 DropdownButtonFormField<String>(
-                  value: gender,
+                  initialValue: gender,
                   items: ['Male', 'Female']
                       .map((g) => DropdownMenuItem(value: g, child: Text(g)))
                       .toList(),
@@ -120,7 +121,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 TextFormField(
                   controller: emailCtrl,
                   decoration: const InputDecoration(labelText: 'Email'),
-                  enabled: false, // Email now read-only
+                  enabled: false,
                 ),
                 TextFormField(
                     controller: phoneCtrl,
@@ -134,7 +135,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 TextFormField(
                     controller: assignedDoctorCtrl,
                     decoration:
-                        const InputDecoration(labelText: 'Assigned Doctor')),
+                    const InputDecoration(labelText: 'Assigned Doctor')),
                 TextFormField(
                     controller: allergiesCtrl,
                     decoration: const InputDecoration(
@@ -172,7 +173,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       ? conditionCtrl.text
                       : 'None',
                   'status': data?['status'] ?? 'Stable',
-                  'statusColor': data?['statusColor'] ?? Colors.green.value,
+                  'statusColor':
+                  data?['statusColor'] ?? Colors.green.toARGB32(),
                   'assignedDoctor': assignedDoctorCtrl.text.isNotEmpty
                       ? assignedDoctorCtrl.text
                       : 'Not Assigned',
@@ -183,16 +185,17 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 };
 
                 if (isEdit) {
-                  await patientsCollection.doc(doc!.id).update(patientData);
+                  await patientsCollection.doc(doc.id).update(patientData);
                 } else {
                   await patientsCollection.add(patientData);
                 }
 
+                if (!context.mounted) return;
                 Navigator.pop(context);
               }
             },
             child: const Text('Save'),
-          ),
+          )
         ],
       ),
     );
@@ -275,9 +278,10 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
 
                 Map<String, dynamic> newItem;
                 if (type == 'Lab') {
-                  int color = Colors.green.value;
-                  if (field3Ctrl.text.toLowerCase().contains('high'))
-                    color = Colors.orange.value;
+                  int color = Colors.green.toARGB32();
+                  if (field3Ctrl.text.toLowerCase().contains('high')) {
+                    color = Colors.orange.toARGB32();
+                  }
                   newItem = {
                     'test': field1Ctrl.text,
                     'value': field2Ctrl.text,
@@ -304,6 +308,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   type == 'Lab' ? 'labResults' : 'prescriptions': listKey,
                 });
 
+                if (!context.mounted) return;
                 Navigator.pop(ctx);
               }
             },
@@ -318,11 +323,11 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
   void _openPatientDetails(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     final rawLabs =
-        data['labResults'] != null ? data['labResults'] as List : [];
+    data['labResults'] != null ? data['labResults'] as List : [];
     final displayLabs =
-        rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
+    rawLabs.map((e) => Map<String, dynamic>.from(e)).toList();
     final rawRx =
-        data['prescriptions'] != null ? data['prescriptions'] as List : [];
+    data['prescriptions'] != null ? data['prescriptions'] as List : [];
     final displayRx = rawRx.map((e) => Map<String, dynamic>.from(e)).toList();
 
     Navigator.push(
@@ -333,7 +338,6 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // Header
               Card(
                 color: Colors.blue.shade50,
                 child: Padding(
@@ -353,8 +357,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                            color: Color(
-                                data['statusColor'] ?? Colors.green.value),
+                            color: Color(data['statusColor'] ??
+                                Colors.green.toARGB32()),
                             borderRadius: BorderRadius.circular(20)),
                         child: Text(data['status'] ?? 'Stable',
                             style: const TextStyle(
@@ -367,8 +371,6 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               ),
 
               const SizedBox(height: 20),
-
-              // Contact Info
               const Text("Contact Info",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Card(
@@ -389,10 +391,8 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
 
-              // Allergies
               const Text("Allergies",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Card(
@@ -401,24 +401,21 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                   child: Wrap(
                     spacing: 8,
                     children: (data['allergies'] as List?)
-                            ?.map<Widget>((a) => Chip(
-                                label: Text(a),
-                                backgroundColor: Colors.red.shade50))
-                            ?.toList() ??
+                        ?.map<Widget>((a) => Chip(
+                        label: Text(a.toString()),
+                        backgroundColor: Colors.red.shade50))
+                        .toList() ??
                         [],
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // Labs
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Lab Results",
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () =>
@@ -441,7 +438,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       children: [
                         Text(entry.value['value'],
                             style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
+                            const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
                           icon: const Icon(Icons.edit,
                               size: 20, color: Colors.grey),
@@ -458,14 +455,12 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
               }),
 
               const SizedBox(height: 20),
-
-              // Prescriptions
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Prescriptions",
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.add_circle, color: Colors.blue),
                     onPressed: () => _showItemForm(type: 'Rx', patientDoc: doc),
@@ -488,7 +483,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                       children: [
                         Text(entry.value['dosage'],
                             style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
+                            const TextStyle(fontWeight: FontWeight.bold)),
                         IconButton(
                           icon: const Icon(Icons.edit,
                               size: 20, color: Colors.grey),
@@ -524,6 +519,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
           TextButton(
             onPressed: () async {
               await patientsCollection.doc(doc.id).delete();
+              if (!mounted) return;
               Navigator.pop(context);
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -552,7 +548,7 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 children: [
                   const Text('Patient Records',
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                   ElevatedButton.icon(
                     onPressed: () => _showPatientForm(),
                     icon: const Icon(Icons.add, size: 20),
@@ -566,8 +562,9 @@ class _PatientManagementPageState extends State<PatientManagementPage> {
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: patientsCollection.snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData)
+                    if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
+                    }
                     final patients = snapshot.data!.docs;
 
                     return SingleChildScrollView(

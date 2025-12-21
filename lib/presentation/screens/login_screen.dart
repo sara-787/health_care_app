@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:health_care_app/presentation/screens/dashboard.dart';
-
 import 'patient_management_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -23,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       UserCredential credential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -31,17 +30,19 @@ class _LoginPageState extends State<LoginPage> {
       String uid = credential.user!.uid;
 
       DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
         debugPrint('Logged in user: ${userData['fullName']}');
       }
 
+      if (!mounted) return; // Fixed: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful!')),
       );
 
+      if (!mounted) return; // Safe guard before navigation
       if (emailController.text.trim() == 'sam@gmail.com') {
         Navigator.pushReplacement(
           context,
@@ -54,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       String message = '';
       if (e.code == 'user-not-found') {
         message = 'No user found for that email.';
@@ -66,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
         SnackBar(content: Text(message)),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));
     }

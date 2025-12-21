@@ -1,93 +1,79 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
 
-class FirebaseRecordsPage extends StatelessWidget {
-  const FirebaseRecordsPage({super.key});
+class DownloadMedicalRecord extends StatefulWidget {
+  const DownloadMedicalRecord({super.key});
 
-  // Function to handle File Download
-  Future<void> downloadFile(
-      BuildContext context, String url, String fileName) async {
+  @override
+  State<DownloadMedicalRecord> createState() => _DownloadMedicalRecordState();
+}
+
+class _DownloadMedicalRecordState extends State<DownloadMedicalRecord> {
+  bool _isDownloading = false;
+  String? _downloadMessage;
+
+  Future<void> _downloadFile(String url, String fileName) async {
+    setState(() {
+      _isDownloading = true;
+      _downloadMessage = "Downloading...";
+    });
+
     try {
-      // 1. Check Permission (Android 10+ doesn't need external storage perm mostly, but good practice)
-      // For simplicity in this example, we save to the App Documents directory
-
       final dir = await getApplicationDocumentsDirectory();
-      final savePath = '${dir.path}/$fileName';
+      final filePath = '${dir.path}/$fileName';
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Starting download...')),
-      );
+      await Dio().download(url, filePath);
 
-      // 2. Download using Dio
-      await Dio().download(url, savePath);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Downloaded to $savePath'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (!mounted) return; // Fixed use_build_context_synchronously
+      setState(() {
+        _downloadMessage = "Downloaded successfully!\nSaved to: $filePath";
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
+      if (!mounted) return; // Fixed
+      setState(() {
+        _downloadMessage = "Download failed: $e";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cloud Records")),
-      body: StreamBuilder<QuerySnapshot>(
-        // Fetching from Firebase collection 'medical_records'
-        stream: FirebaseFirestore.instance
-            .collection('medical_records')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No records found in cloud."));
-          }
-
-          final docs = snapshot.data!.docs;
-
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
-
-              // Safely get data with fallbacks
-              String title = data['title'] ?? 'Untitled Record';
-              String url = data['file_url'] ?? ''; // The PDF link in Firebase
-
-              return ListTile(
-                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
-                title: Text(title),
-                subtitle: Text(data['date'] ?? 'No date'),
-                trailing: IconButton(
-                  icon: const Icon(Icons.cloud_download),
-                  onPressed: () {
-                    if (url.isNotEmpty) {
-                      downloadFile(context, url, '$title.pdf');
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('No file URL found for this record')),
-                      );
-                    }
-                  },
+      appBar: AppBar(title: const Text("Download Medical Record")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isDownloading) const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isDownloading
+                  ? null
+                  : () => _downloadFile(
+                "https://example.com/sample-report.pdf",
+                "medical_report.pdf",
+              ),
+              child: const Text("Download Sample Report"),
+            ),
+            const SizedBox(height: 20),
+            if (_downloadMessage != null)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  _downloadMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
                 ),
-              );
-            },
-          );
-        },
+              ),
+          ],
+        ),
       ),
     );
   }

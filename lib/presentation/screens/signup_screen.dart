@@ -38,14 +38,15 @@ class _SignUpPageState extends State<SignUpPage> {
           .get();
 
       if (query.docs.isEmpty) {
-        if (context.mounted) Navigator.pop(context); // Dismiss loading
+        if (!mounted) return;
+        Navigator.pop(context); // Dismiss loading
         throw 'National ID not found. Please contact the administrator.';
       }
 
       final userDoc = query.docs.first;
 
       UserCredential credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -60,17 +61,17 @@ class _SignUpPageState extends State<SignUpPage> {
         'name': nameController.text.trim(),
       });
 
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sign up successful!')),
-        );
+      if (!mounted) return;
+      Navigator.pop(context); // Dismiss loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign up successful!')),
+      );
 
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const Dashboard()));
-      }
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const Dashboard()));
     } on FirebaseAuthException catch (e) {
-      if (context.mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context); // Dismiss loading
       String message = '';
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
@@ -83,7 +84,8 @@ class _SignUpPageState extends State<SignUpPage> {
         SnackBar(content: Text(message)),
       );
     } catch (e) {
-      if (context.mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context); // Dismiss loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
@@ -126,7 +128,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter your name' : null,
+                      v == null || v.isEmpty ? 'Enter your name' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -170,7 +172,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       obscureText: true,
                       validator: (v) =>
-                          v == null || v.length < 6 ? 'Min 6 characters' : null,
+                      v == null || v.length < 6 ? 'Min 6 characters' : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(

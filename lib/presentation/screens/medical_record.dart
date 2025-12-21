@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import 'RecordDetailPage.dart';
+import 'record_detail_page.dart .dart';
 
 class MedicalRecord extends StatefulWidget {
   const MedicalRecord({super.key});
