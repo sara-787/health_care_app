@@ -42,7 +42,7 @@ class _SignUpPageState extends State<SignUpPage> {
       final userDoc = query.docs.first;
 
       UserCredential credential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
@@ -123,7 +123,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) =>
-                      v == null || v.isEmpty ? 'Enter your name' : null,
+                          v == null || v.isEmpty ? 'Enter your name' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -167,7 +167,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       obscureText: true,
                       validator: (v) =>
-                      v == null || v.length < 6 ? 'Min 6 characters' : null,
+                          v == null || v.length < 6 ? 'Min 6 characters' : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
