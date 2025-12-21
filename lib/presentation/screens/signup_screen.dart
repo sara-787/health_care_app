@@ -28,7 +28,6 @@ class _SignUpPageState extends State<SignUpPage> {
     );
 
     try {
-
       final query = await FirebaseFirestore.instance
           .collection('users')
           .where('nationalId', isEqualTo: nationalIdController.text.trim())
@@ -42,13 +41,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
       final userDoc = query.docs.first;
 
-
       UserCredential credential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -144,7 +141,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         }
                         return null;
                       },
-
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
