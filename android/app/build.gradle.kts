@@ -46,11 +46,11 @@ flutter {
     source = "../.."
 }
 
-// FIX: Force stable versions of dependencies to resolve CI/CD build errors
+// --- FIX: Correct Kotlin Syntax for Resolution Strategy ---
 configurations.all {
     resolutionStrategy {
-        force 'androidx.browser:browser:1.8.0'
-        force 'androidx.core:core:1.13.1'
-        force 'androidx.core:core-ktx:1.13.1'
+        force("androidx.browser:browser:1.8.0")
+        force("androidx.core:core:1.13.1")
+        force("androidx.core:core-ktx:1.13.1")
     }
 }

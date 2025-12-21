@@ -3,9 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dashboard.dart';
 
-/// A screen that allows users to sign up for a new account.
-/// This screen collects user information and creates an account
-/// using Firebase Authentication and Firestore.
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -31,6 +28,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
 
     try {
+
       final query = await FirebaseFirestore.instance
           .collection('users')
           .where('nationalId', isEqualTo: nationalIdController.text.trim())
@@ -38,18 +36,19 @@ class _SignUpPageState extends State<SignUpPage> {
           .get();
 
       if (query.docs.isEmpty) {
-        if (!mounted) return;
-        Navigator.pop(context); // Dismiss loading
+        if (context.mounted) Navigator.pop(context); // Dismiss loading
         throw 'National ID not found. Please contact the administrator.';
       }
 
       final userDoc = query.docs.first;
 
+
       UserCredential credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -61,17 +60,17 @@ class _SignUpPageState extends State<SignUpPage> {
         'name': nameController.text.trim(),
       });
 
-      if (!mounted) return;
-      Navigator.pop(context); // Dismiss loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign up successful!')),
-      );
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign up successful!')),
+        );
 
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const Dashboard()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const Dashboard()));
+      }
     } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context); // Dismiss loading
+      if (context.mounted) Navigator.pop(context);
       String message = '';
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
@@ -84,8 +83,7 @@ class _SignUpPageState extends State<SignUpPage> {
         SnackBar(content: Text(message)),
       );
     } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context); // Dismiss loading
+      if (context.mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
@@ -128,7 +126,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         border: OutlineInputBorder(),
                       ),
                       validator: (v) =>
-                          v == null || v.isEmpty ? 'Enter your name' : null,
+                      v == null || v.isEmpty ? 'Enter your name' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -146,6 +144,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         }
                         return null;
                       },
+
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -172,7 +171,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       obscureText: true,
                       validator: (v) =>
-                          v == null || v.length < 6 ? 'Min 6 characters' : null,
+                      v == null || v.length < 6 ? 'Min 6 characters' : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
