@@ -3,16 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Import your specific screens and models
+// Import your screens
 import 'package:health_care_app/presentation/screens/account.dart';
 import 'package:health_care_app/presentation/screens/medical_record.dart';
 import 'chat_screen.dart';
 import 'patient_model.dart';
-import 'api_service.dart';
+import 'simulation_service.dart'; // <--- NEW IMPORT
 
-// ==========================================
-// 1. MAIN WRAPPER (Handles Navigation)
-// ==========================================
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
 
@@ -22,72 +19,49 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int currentPageIndex = 0;
-
-  // The list of pages to switch between
   late final List<Widget> pages;
 
   @override
   void initState() {
     super.initState();
     pages = [
-      const DashboardContent(), // <--- The rich UI from your second file
-      const MedicalRecord(),    // Your existing screen
-      const Account(),          // Your existing screen
+      const DashboardContent(),
+      const MedicalRecord(),
+      const Account(),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // We removed the generic AppBar here so the DashboardContent
-      // can show its own custom "HealthCare Plus" header.
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: pages[currentPageIndex],
-      ),
-      // ADD THIS FLOATING BUTTON:
+      body: SafeArea(child: pages[currentPageIndex]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ChatScreen()),
+            MaterialPageRoute(builder: (context) => const ChatBotScreen()),
           );
         },
         backgroundColor: const Color(0xFF2563EB),
         child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Good for 3+ items
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color.fromARGB(255, 74, 116, 233),
         unselectedItemColor: Colors.grey,
         currentIndex: currentPageIndex,
-        onTap: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
+        onTap: (index) => setState(() => currentPageIndex = index),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.medical_services),
-            label: 'Medical',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Account',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: 'Medical'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
       ),
     );
   }
 }
 
-// ==========================================
-// 2. DASHBOARD CONTENT (The Rich UI Logic)
-// ==========================================
 class DashboardContent extends StatefulWidget {
   const DashboardContent({super.key});
 
@@ -97,11 +71,7 @@ class DashboardContent extends StatefulWidget {
 
 class _DashboardContentState extends State<DashboardContent> {
   Patient? _patient;
-  bool _isLoading = true;
-  String? _errorMessage;
   Timer? _timer;
-
-  // Chart Data
   final List<FlSpot> _hrHistory = [];
   double _timeCounter = 0;
 
@@ -109,7 +79,7 @@ class _DashboardContentState extends State<DashboardContent> {
   void initState() {
     super.initState();
     _loadData();
-    // Refresh data every 3 seconds
+    // Refresh every 3 seconds
     _timer = Timer.periodic(const Duration(seconds: 3), (_) => _loadData());
   }
 
@@ -119,71 +89,35 @@ class _DashboardContentState extends State<DashboardContent> {
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    try {
-      final patient = await ApiService.fetchPatientData();
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = null; // Clear errors if successful
-          if (patient != null) {
-            _patient = patient;
-            // Add point to chart
-            _hrHistory.add(FlSpot(_timeCounter++, patient.heartRate.toDouble()));
-            // Keep only last 20 points for a moving window
-            if (_hrHistory.length > 20) _hrHistory.removeAt(0);
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted && _patient == null) {
-        // Only show full-screen error if we have NO data yet
-        setState(() {
-          _isLoading = false;
-          _errorMessage = e.toString();
-        });
-      }
+  // --- REPLACED PYTHON LOGIC WITH DART LOGIC ---
+  void _loadData() {
+    // Get data directly from our local SimulationService
+    final patient = SimulationService().getNextPatientData();
+
+    if (mounted) {
+      setState(() {
+        _patient = patient;
+
+        // Update Chart
+        _hrHistory.add(FlSpot(_timeCounter++, patient.heartRate.toDouble()));
+        if (_hrHistory.length > 20) _hrHistory.removeAt(0);
+
+        // Optional: Trigger Alert if Critical
+        if (patient.status == "WARNING" || patient.status == "CRITICAL") {
+          // You could show a snackbar here if you want
+        }
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 1. Handle Loading
-    if (_isLoading) {
+    if (_patient == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // 2. Handle Error (Initial Load)
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 60, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              "Could not load data",
-              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(_errorMessage!, textAlign: TextAlign.center),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() => _isLoading = true);
-                _loadData();
-              },
-              child: const Text("Retry Connection"),
-            )
-          ],
-        ),
-      );
-    }
-
-    // 3. Main Dashboard UI
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Light grey background
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -220,15 +154,15 @@ class _DashboardContentState extends State<DashboardContent> {
   }
 
   Widget _buildWelcomeCard() {
-    bool isCritical = _patient?.status == 'CRITICAL';
+    bool isCritical = _patient?.status == 'WARNING' || _patient?.status == 'CRITICAL';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isCritical
-              ? [const Color(0xFFEF4444), const Color(0xFFB91C1C)] // Red if critical
-              : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)], // Blue normally
+              ? [const Color(0xFFEF4444), const Color(0xFFB91C1C)]
+              : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -268,7 +202,7 @@ class _DashboardContentState extends State<DashboardContent> {
               ),
               const SizedBox(width: 10),
               Text(
-                "AI Risk Level: ${_patient?.riskLevel}",
+                "Risk Level: ${_patient?.riskLevel}",
                 style: GoogleFonts.inter(
                   color: Colors.white.withOpacity(0.9),
                   fontSize: 14,
@@ -284,11 +218,6 @@ class _DashboardContentState extends State<DashboardContent> {
   Widget _buildVitalsGrid() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Responsive: 2 columns on mobile, 4 on larger screens
-        final width = constraints.maxWidth > 600
-            ? (constraints.maxWidth - 20) / 2
-            : constraints.maxWidth;
-
         return Wrap(
           spacing: 16,
           runSpacing: 16,
@@ -299,14 +228,14 @@ class _DashboardContentState extends State<DashboardContent> {
               icon: Icons.favorite_border,
               color: Colors.redAccent,
               chartData: _hrHistory,
-              width: (constraints.maxWidth - 16) / 2, // Half width
+              width: (constraints.maxWidth - 16) / 2,
             ),
             _buildCard(
               title: "Temperature",
               value: "${_patient?.temperature} °C",
               icon: Icons.thermostat,
               color: Colors.orangeAccent,
-              chartData: [], // Add history if you want
+              chartData: [],
               width: (constraints.maxWidth - 16) / 2,
             ),
             _buildCard(
@@ -319,7 +248,7 @@ class _DashboardContentState extends State<DashboardContent> {
             ),
             _buildCard(
               title: "Steps",
-              value: "${_patient?.steps} ",
+              value: "${_patient?.steps}",
               icon: Icons.directions_walk,
               color: Colors.green,
               chartData: [],
@@ -381,7 +310,6 @@ class _DashboardContentState extends State<DashboardContent> {
             ),
           ),
           const SizedBox(height: 12),
-          // Mini Chart
           SizedBox(
             height: 40,
             child: LineChart(

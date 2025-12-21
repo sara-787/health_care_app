@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:health_care_app/presentation/screens/dashboard.dart';
+import 'dashboard.dart';
 
-
+/// A screen that allows users to sign up for a new account.
+/// This screen collects user information and creates an account
+/// using Firebase Authentication and Firestore.
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -22,7 +24,27 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
     try {
+
+      final query = await FirebaseFirestore.instance
+          .collection('users')
+          .where('nationalId', isEqualTo: nationalIdController.text.trim())
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        if (context.mounted) Navigator.pop(context); // Dismiss loading
+        throw 'National ID not found. Please contact the administrator.';
+      }
+
+      final userDoc = query.docs.first;
+
 
       UserCredential credential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -30,36 +52,41 @@ class _SignUpPageState extends State<SignUpPage> {
         password: passwordController.text.trim(),
       );
 
-      String uid = credential.user!.uid;
 
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'fullName': nameController.text.trim(),
-        'nationalId': nationalIdController.text.trim(),
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userDoc.id)
+          .update({
+        'uid': credential.user!.uid,
         'email': emailController.text.trim(),
-        'createdAt': Timestamp.now(),
+        'fullName': nameController.text.trim(),
+        'name': nameController.text.trim(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign up successful!')),
-      );
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sign up successful!')),
+        );
 
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const Dashboard()));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const Dashboard()));
+      }
     } on FirebaseAuthException catch (e) {
+      if (context.mounted) Navigator.pop(context);
       String message = '';
       if (e.code == 'weak-password') {
         message = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
         message = 'The account already exists for that email.';
       } else {
-        message = 'An error occurred. Try again.';
+        message = 'An error occurred: ${e.message}';
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
     } catch (e) {
+      if (context.mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
@@ -115,9 +142,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       keyboardType: TextInputType.number,
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter National ID';
-                        if (v.length != 14) return 'National ID must be 14 digits';
+                        if (v.length != 14) {
+                          return 'National ID must be 14 digits';
+                        }
                         return null;
                       },
+
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -127,9 +157,12 @@ class _SignUpPageState extends State<SignUpPage> {
                         prefixIcon: Icon(Icons.email),
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) =>
-                      v == null || !v.contains('@') ? 'Enter valid email' : null,
+                      readOnly: false,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Enter Email';
+                        if (!v.contains('@')) return 'Invalid Email';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

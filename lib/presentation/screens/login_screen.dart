@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:health_care_app/presentation/screens/dashboard.dart';
 
+import 'patient_management_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -44,10 +45,19 @@ class _LoginPageState extends State<LoginPage> {
       );
 
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const Dashboard()),
-      );
+      if (emailController.text.trim() == 'sam@gmail.com') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const PatientManagementPage()),
+        );
+      } else {
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Dashboard()),
+        );
+      }
+
     } on FirebaseAuthException catch (e) {
       String message = '';
       if (e.code == 'user-not-found') {
@@ -102,8 +112,9 @@ class _LoginPageState extends State<LoginPage> {
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (v) =>
-                      v == null || !v.contains('@') ? 'Enter valid email' : null,
+                      validator: (v) => v == null || !v.contains('@')
+                          ? 'Enter valid email'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -114,8 +125,9 @@ class _LoginPageState extends State<LoginPage> {
                         border: OutlineInputBorder(),
                       ),
                       obscureText: true,
-                      validator: (v) =>
-                      v == null || v.length < 6 ? 'Minimum 6 characters' : null,
+                      validator: (v) => v == null || v.length < 6
+                          ? 'Minimum 6 characters'
+                          : null,
                     ),
                     const SizedBox(height: 24),
                     SizedBox(

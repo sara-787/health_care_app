@@ -1,143 +1,200 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'api_service.dart'; // Import to access baseUrl
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+// Import your local services
+import 'simulation_service.dart';
+import 'local_chat_service.dart';
+
+class ChatBotScreen extends StatefulWidget {
+  const ChatBotScreen({super.key});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ChatBotScreen> createState() => _ChatBotScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatBotScreenState extends State<ChatBotScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = []; // Stores {sender: "user"/"bot", text: "..."}
+  final ScrollController _scrollController = ScrollController();
+
+  // Stores chat history: "role" is either "user" or "ai"
+  final List<Map<String, String>> _messages = [
+    {
+      "role": "ai",
+      "text": "Hello! I am your AI Medical Assistant. I can check the patient's current vitals like Heart Rate, SpO2, and Risk Level. How can I help?"
+    }
+  ];
+
   bool _isTyping = false;
 
-  Future<void> _sendMessage() async {
-    if (_controller.text.isEmpty) return;
+  void _sendMessage() async {
+    if (_controller.text.trim().isEmpty) return;
 
-    final String text = _controller.text;
+    final userText = _controller.text.trim();
+
+    // 1. Add User Message to Chat
     setState(() {
-      _messages.add({"sender": "user", "text": text});
+      _messages.add({"role": "user", "text": userText});
       _isTyping = true;
       _controller.clear();
     });
+    _scrollToBottom();
 
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/chat'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"message": text}),
-      );
+    // 2. Simulate "Thinking" Delay
+    await Future.delayed(const Duration(seconds: 1));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _messages.add({"sender": "bot", "text": data['response']});
-        });
-      } else {
-        setState(() {
-          _messages.add({"sender": "bot", "text": "Error: Server is not responding."});
-        });
-      }
-    } catch (e) {
+    // 3. Get Real-Time Data from Simulation Service
+    // We fetch the latest data so the AI knows the CURRENT heart rate/etc.
+    final currentPatientData = SimulationService().getNextPatientData();
+
+    // 4. Generate Answer Locally
+    final aiResponse = LocalChatService.getResponse(userText, currentPatientData);
+
+    // 5. Add AI Response to Chat
+    if (mounted) {
       setState(() {
-        _messages.add({"sender": "bot", "text": "Connection failed. Is the backend running?"});
+        _isTyping = false;
+        _messages.add({"role": "ai", "text": aiResponse});
       });
-    } finally {
-      setState(() => _isTyping = false);
+      _scrollToBottom();
     }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Medical Assistant", style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 1,
+        title: Text(
+          "AI Assistant",
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       backgroundColor: const Color(0xFFF5F7FA),
       body: Column(
         children: [
+          // Chat List
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(20),
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isUser = msg['sender'] == 'user';
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: isUser ? const Color(0xFF2563EB) : Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(15),
-                        topRight: const Radius.circular(15),
-                        bottomLeft: isUser ? const Radius.circular(15) : Radius.zero,
-                        bottomRight: isUser ? Radius.zero : const Radius.circular(15),
-                      ),
-                      boxShadow: [
-                        if (!isUser) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)
-                      ],
-                    ),
-                    child: Text(
-                      msg['text']!,
-                      style: GoogleFonts.inter(
-                        color: isUser ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ),
-                );
+                final isUser = msg['role'] == "user";
+                return _buildMessageBubble(msg['text']!, isUser);
               },
             ),
           ),
+
+          // Typing Indicator
           if (_isTyping)
             Padding(
-              padding: const EdgeInsets.only(left: 20, bottom: 10),
+              padding: const EdgeInsets.only(left: 16, bottom: 8),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text("Assistant is typing...", style: GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
+                child: Text(
+                  "AI is typing...",
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
               ),
             ),
+
+          // Input Area
           Container(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(12),
             color: Colors.white,
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    onSubmitted: (_) => _sendMessage(),
                     decoration: InputDecoration(
-                      hintText: "Ask about heart rate, status...",
-                      hintStyle: GoogleFonts.inter(color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
-                      ),
+                      hintText: "Ask about heart rate, risk...",
+                      hintStyle: GoogleFonts.inter(color: Colors.grey[400]),
                       filled: true,
                       fillColor: const Color(0xFFF1F5F9),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                FloatingActionButton(
-                  onPressed: _sendMessage,
+                const SizedBox(width: 8),
+                CircleAvatar(
                   backgroundColor: const Color(0xFF2563EB),
-                  child: const Icon(Icons.send, color: Colors.white),
-                )
+                  radius: 24,
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                    onPressed: _sendMessage,
+                  ),
+                ),
               ],
             ),
-          )
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(String text, bool isUser) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        decoration: BoxDecoration(
+          color: isUser ? const Color(0xFF2563EB) : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: isUser ? const Radius.circular(16) : Radius.zero,
+            bottomRight: isUser ? Radius.zero : const Radius.circular(16),
+          ),
+          boxShadow: [
+            if (!isUser)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            color: isUser ? Colors.white : Colors.black87,
+            fontSize: 15,
+          ),
+        ),
       ),
     );
   }
