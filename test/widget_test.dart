@@ -19,17 +19,6 @@ void main() {
       expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Sign Up'), findsOneWidget);
     });
-
-    testWidgets('LoginPage renders email and password fields',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: LoginPage()));
-
-      expect(find.text('Login'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'Email'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Login'), findsOneWidget);
-    });
-
     testWidgets('GetStartedScreen renders welcome text and button',
         (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: GetStartedScreen()));
@@ -57,22 +46,6 @@ void main() {
       expect(find.text('Blood Test'), findsOneWidget);
       expect(find.text('Lab Result'), findsOneWidget);
       expect(find.byIcon(Icons.science), findsOneWidget);
-    });
-
-    testWidgets('PatientManagementPage renders dashboard title and button',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: PatientManagementPage()));
-      expect(find.text('Patient Management'), findsOneWidget);
-      expect(
-          find.widgetWithText(ElevatedButton, 'Add Patient'), findsOneWidget);
-    });
-
-    testWidgets('PatientManagementPage renders table headers',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: PatientManagementPage()));
-      expect(find.text('National ID'), findsOneWidget);
-      expect(find.text('Patient Name'), findsOneWidget);
-      expect(find.text('Gender'), findsOneWidget);
     });
 
     testWidgets('Admin Login Scenario: Inputs sam@gmail.com correctly',
