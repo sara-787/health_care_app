@@ -1,48 +1,94 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:health_care_app/presentation/screens/getstarted_screen.dart';
+import 'package:health_care_app/presentation/screens/login_screen.dart';
+import 'package:health_care_app/presentation/screens/patient_management_page.dart';
+import 'package:health_care_app/presentation/screens/record_detail_page.dart%20.dart';
+import 'package:health_care_app/presentation/screens/signup_screen.dart';
 
 void main() {
-  group('Unit Tests', () {
-    test('Email Validation returns error if no @ symbol', () {
-      String? validateEmail(String? v) {
-        if (v == null || !v.contains('@')) return 'Enter valid email';
-        return null;
-      }
+  group('Component Tests', () {
+    testWidgets('SignUpPage renders all input fields and button',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: SignUpPage()));
 
-      expect(validateEmail('invalid-email'), 'Enter valid email');
-      expect(validateEmail('test@example.com'), null);
-    });
+          expect(find.text('Create Account'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'Full Name'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'National ID'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'Email'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
+          expect(find.widgetWithText(ElevatedButton, 'Sign Up'), findsOneWidget);
+        });
 
-    test('Password Validation returns error if less than 6 characters', () {
-      String? validatePassword(String? v) {
-        if (v == null || v.length < 6) return 'Minimum 6 characters';
-        return null;
-      }
+    testWidgets('LoginPage renders email and password fields',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: LoginPage()));
 
-      expect(validatePassword('12345'), 'Minimum 6 characters');
-      expect(validatePassword('123456'), null);
-    });
+          expect(find.text('Login'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'Email'), findsOneWidget);
+          expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
+          expect(find.widgetWithText(ElevatedButton, 'Login'), findsOneWidget);
+        });
 
-    test('National ID Validation returns error if not exactly 14 digits', () {
-      String? validateNationalId(String? v) {
-        if (v == null || v.isEmpty) return 'Enter National ID';
-        if (v.length != 14) return 'National ID must be 14 digits';
-        return null;
-      }
+    testWidgets('GetStartedScreen renders welcome text and button',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: GetStartedScreen()));
 
-      expect(validateNationalId('123'), 'National ID must be 14 digits');
-      expect(validateNationalId('12345678901234'), null);
-      expect(validateNationalId(''), 'Enter National ID');
-    });
+          expect(find.text('Welcome'), findsOneWidget);
+          expect(find.byType(Image), findsOneWidget);
+          expect(
+              find.widgetWithText(ElevatedButton, 'Get Started'), findsOneWidget);
+        });
 
-    test('Name Validation returns error if empty', () {
-      String? validateName(String? v) {
-        if (v == null || v.isEmpty) return 'Enter your name';
-        return null;
-      }
+    testWidgets('RecordDetailPage renders data correctly',
+            (WidgetTester tester) async {
+          final mockData = {
+            'title': 'Blood Test',
+            'type': 'Lab Result',
+            'date': '2025-01-01',
+            'doctor': 'Dr. House',
+            'description': 'Routine checkup',
+            'raw': {'value': 'Normal', 'status': 'Final'}
+          };
 
-      expect(validateName(''), 'Enter your name');
-      expect(validateName('John Doe'), null);
-    });
+          await tester
+              .pumpWidget(MaterialApp(home: RecordDetailPage(data: mockData)));
+
+          expect(find.text('Blood Test'), findsOneWidget);
+          expect(find.text('Lab Result'), findsOneWidget);
+          expect(find.byIcon(Icons.science), findsOneWidget);
+        });
+
+    testWidgets('PatientManagementPage renders dashboard title and button',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: PatientManagementPage()));
+          expect(find.text('Patient Management'), findsOneWidget);
+          expect(
+              find.widgetWithText(ElevatedButton, 'Add Patient'), findsOneWidget);
+        });
+
+    testWidgets('PatientManagementPage renders table headers',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: PatientManagementPage()));
+          expect(find.text('National ID'), findsOneWidget);
+          expect(find.text('Patient Name'), findsOneWidget);
+          expect(find.text('Gender'), findsOneWidget);
+        });
+
+    testWidgets('Admin Login Scenario: Inputs sam@gmail.com correctly',
+            (WidgetTester tester) async {
+          await tester.pumpWidget(const MaterialApp(home: LoginPage()));
+
+          final emailField = find.widgetWithText(TextFormField, 'Email');
+          final passwordField = find.widgetWithText(TextFormField, 'Password');
+
+          await tester.enterText(emailField, 'sam@gmail.com');
+          await tester.enterText(passwordField, '123456');
+          await tester.pump();
+
+          expect(find.text('sam@gmail.com'), findsOneWidget);
+          expect(find.text('123456'), findsOneWidget);
+          expect(find.widgetWithText(ElevatedButton, 'Login'), findsOneWidget);
+        });
   });
 }
-
