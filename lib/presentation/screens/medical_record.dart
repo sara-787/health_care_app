@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'RecordDetailPage.dart';
 
+
 class MedicalRecord extends StatefulWidget {
   const MedicalRecord({super.key});
 
@@ -53,7 +54,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
   // ---------------------------------------------------------------------------
 
   void _shareRecord(Map<String, dynamic> record) {
-    String content = 'Medical Record: ${record['title']}\nDate: ${record['date']}';
+    String content =
+        'Medical Record: ${record['title']}\nDate: ${record['date']}';
     if (record['url'] != null && record['url'].isNotEmpty) {
       content += '\nDownload: ${record['url']}';
     } else {
@@ -62,11 +64,12 @@ class _MedicalRecordState extends State<MedicalRecord> {
     Share.share(content);
   }
 
-  Future<void> _downloadRecord(BuildContext context, Map<String, dynamic> record) async {
-    // Check if there is a URL (Lab results stored as text won't have a URL)
+  Future<void> _downloadRecord(
+      BuildContext context, Map<String, dynamic> record) async {
     if (record['url'] == null || record['url'].isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This record is text-only (No PDF attached).')),
+        const SnackBar(
+            content: Text('This record is text-only (No PDF attached).')),
       );
       return;
     }
@@ -77,7 +80,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
       );
 
       final dir = await getApplicationDocumentsDirectory();
-      final fileName = "${record['title'].toString().replaceAll(RegExp(r'[^\w\s]+'), '')}.pdf";
+      final fileName =
+          "${record['title'].toString().replaceAll(RegExp(r'[^\w\s]+'), '')}.pdf";
       final savePath = '${dir.path}/$fileName';
 
       await Dio().download(record['url'], savePath);
@@ -94,7 +98,9 @@ class _MedicalRecordState extends State<MedicalRecord> {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download Failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Download Failed: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -105,7 +111,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
     final User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("Please login to view records")));
+      return const Scaffold(
+          body: Center(child: Text("Please login to view records")));
     }
 
     return Scaffold(
@@ -119,13 +126,15 @@ class _MedicalRecordState extends State<MedicalRecord> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Medical Records',
+              'My Medical Records',
               style: TextStyle(
-                  fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
             ),
             const SizedBox(height: 8),
             Text(
-              'Access your health documents',
+              'Your personal health history',
               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
           ],
@@ -158,21 +167,26 @@ class _MedicalRecordState extends State<MedicalRecord> {
 
             // Firestore Stream
             Expanded(
-              child: StreamBuilder<DocumentSnapshot>(
-                // Fetching the specific user document based on Auth UID
-                stream: FirebaseFirestore.instance.collection('users').doc(user.uid).snapshots(),
+              child: StreamBuilder<QuerySnapshot>(
+                // --- FIX: Query by 'uid' field instead of Document ID ---
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .where('uid', isEqualTo: user.uid)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(child: Text('No patient record found.'));
                   }
 
-                  // 1. Get raw data
-                  final userData = snapshot.data!.data() as Map<String, dynamic>;
-                  final String assignedDoctor = userData['assignedDoctor'] ?? 'General Doctor';
+                  // Since we query by unique UID, we take the first matching document
+                  final userDoc = snapshot.data!.docs.first;
+                  final userData = userDoc.data() as Map<String, dynamic>;
+                  final String assignedDoctor =
+                      userData['assignedDoctor'] ?? 'General Doctor';
 
                   List<Map<String, dynamic>> allItems = [];
 
@@ -182,11 +196,12 @@ class _MedicalRecordState extends State<MedicalRecord> {
                       allItems.add({
                         'title': item['test'] ?? 'Unknown Test',
                         'type': 'Lab Result',
-                        'description': 'Value: ${item['value']} | Status: ${item['status']}',
+                        'description':
+                        'Value: ${item['value']} | Status: ${item['status']}',
                         'date': item['date'] ?? 'No Date',
                         'doctor': assignedDoctor,
-                        'url': '', // Assuming no file URL in current structure, add if exists
-                        'raw': item, // Keep raw data for details page
+                        'url': '',
+                        'raw': item,
                       });
                     }
                   }
@@ -197,7 +212,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                       allItems.add({
                         'title': item['medication'] ?? 'Unknown Med',
                         'type': 'Prescription',
-                        'description': 'Dosage: ${item['dosage']} | ${item['instructions']}',
+                        'description':
+                        'Dosage: ${item['dosage']} | ${item['instructions']}',
                         'date': item['date'] ?? 'No Date',
                         'doctor': assignedDoctor,
                         'url': '',
@@ -209,7 +225,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                   // 4. Filter Logic
                   final filteredRecords = allItems.where((item) {
                     final title = item['title'].toString().toLowerCase();
-                    return _searchKeyword.isEmpty || title.contains(_searchKeyword);
+                    return _searchKeyword.isEmpty ||
+                        title.contains(_searchKeyword);
                   }).toList();
 
                   if (filteredRecords.isEmpty) {
@@ -246,7 +263,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                       child: Text(
                                         record['type'],
                                         style: TextStyle(
-                                          color: getTagTextColor(record['type']),
+                                          color:
+                                          getTagTextColor(record['type']),
                                           fontWeight: FontWeight.bold,
                                           fontSize: 12,
                                         ),
@@ -317,9 +335,8 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                       );
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
+                                      backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 20, vertical: 12),
@@ -332,7 +349,6 @@ class _MedicalRecordState extends State<MedicalRecord> {
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      // Only show download if URL exists
                                       if (record['url'] != null &&
                                           record['url'].isNotEmpty)
                                         IconButton(

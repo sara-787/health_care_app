@@ -4,8 +4,8 @@ class Patient {
   final int heartRate;
   final double temperature;
   final int spo2;
-  final int steps; // ✅ NEW FIELD
-  final String status;
+  final int steps;       // Matches 'steps' in api.py
+  final String status;   // Matches 'health_status' in api.py
   final String riskLevel;
   final double confidence;
 
@@ -15,7 +15,7 @@ class Patient {
     required this.heartRate,
     required this.temperature,
     required this.spo2,
-    required this.steps, // ✅ REQUIRED
+    required this.steps,
     required this.status,
     required this.riskLevel,
     required this.confidence,
@@ -26,12 +26,12 @@ class Patient {
       id: json['patient_id'] ?? '',
       name: json['full_name'] ?? 'Unknown',
       heartRate: json['heart_rate_bpm'] ?? 0,
-      temperature: (json['temperature_c'] ?? 0.0).toDouble(),
+      temperature: (json['temperature_c'] ?? 0).toDouble(),
       spo2: json['spo2_percent'] ?? 0,
-      steps: json['steps'] ?? 0, // ✅ PARSE IT
+      steps: json['steps'] ?? 0,
       status: json['health_status'] ?? 'NORMAL',
-      riskLevel: json['risk_level'] ?? 'Low Risk',
-      confidence: (json['confidence'] ?? 0.0).toDouble(),
+      riskLevel: json['risk_level'] ?? 'Low',
+      confidence: (json['confidence'] ?? 0).toDouble(),
     );
   }
 }

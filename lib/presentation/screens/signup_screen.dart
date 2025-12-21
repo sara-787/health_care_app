@@ -3,9 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dashboard.dart';
 
-/// A screen that allows users to sign up for a new account.
-/// This screen collects user information and creates an account
-/// using Firebase Authentication and Firestore.
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -24,6 +21,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Future<void> signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // Show Loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -31,40 +29,68 @@ class _SignUpPageState extends State<SignUpPage> {
     );
 
     try {
-
+      // 1. Check if National ID already exists (Pre-registered by Admin)
       final query = await FirebaseFirestore.instance
           .collection('users')
           .where('nationalId', isEqualTo: nationalIdController.text.trim())
           .limit(1)
           .get();
 
-      if (query.docs.isEmpty) {
-        if (context.mounted) Navigator.pop(context); // Dismiss loading
-        throw 'National ID not found. Please contact the administrator.';
-      }
-
-      final userDoc = query.docs.first;
-
-
+      // 2. Create Authentication User
       UserCredential credential =
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
+      String uid = credential.user!.uid;
+      String email = emailController.text.trim();
+      String name = nameController.text.trim();
+      String nationalId = nationalIdController.text.trim();
 
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userDoc.id)
-          .update({
-        'uid': credential.user!.uid,
-        'email': emailController.text.trim(),
-        'fullName': nameController.text.trim(),
-        'name': nameController.text.trim(),
-      });
+      // 3. Save Data to Firestore
+      if (query.docs.isNotEmpty) {
+        // SCENARIO A: Admin already added this National ID.
+        // We update the EXISTING document to link it to this Auth account.
+        final userDoc = query.docs.first;
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userDoc.id)
+            .update({
+          'uid': uid,
+          'email': email,
+          'fullName': name,
+          'name': name, // Update name in case user spells it differently than admin
+        });
+      } else {
+        // SCENARIO B: New User (Not in system).
+        // We create a NEW document. We must add default fields so it shows up
+        // correctly in the Admin Panel.
+        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'uid': uid,
+          'email': email,
+          'fullName': name,
+          'name': name,
+          'nationalId': nationalId,
+          // Default values for Admin Dashboard compatibility
+          'role': 'patient',
+          'status': 'Stable',
+          'statusColor': Colors.green.value,
+          'gender': 'Not Specified',
+          'age': '',
+          'dateOfBirth': '',
+          'phone': '',
+          'address': '',
+          'condition': 'None',
+          'allergies': [],
+          'labResults': [],
+          'prescriptions': [],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       if (context.mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context); // Dismiss loading
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign up successful!')),
         );
@@ -88,7 +114,7 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (e) {
       if (context.mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Error: ${e.toString()}")),
       );
     }
   }
@@ -147,7 +173,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         }
                         return null;
                       },
-
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -157,6 +182,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         prefixIcon: Icon(Icons.email),
                         border: OutlineInputBorder(),
                       ),
+                      // Removed ReadOnly: User must enter their email to sign up
                       readOnly: false,
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Enter Email';
